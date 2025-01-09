@@ -1,6 +1,6 @@
 library(tidyverse)
 
-data <- tibble(
+data <- tibble::tibble(
   kennitala = "310200-3257",
   nafn_nemanda = "Grettir Ásmundsson",
   prof_numer = "les07",
