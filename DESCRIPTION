@@ -16,3 +16,5 @@ Imports:
     lifecycle,
     rlang,
     withr
+URL: https://github.com/auv2/birtir
+BugReports: https://github.com/auv2/birtir/issues
