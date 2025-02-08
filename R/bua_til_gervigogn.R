@@ -44,9 +44,13 @@ kvardi_lysing <- c(
 
 )
 
-kvardi <-
-  tibble(
+kvardi <- list(
+  kvardi_bil = c(1,19),
+  kvardi_lysing = tibble(
     einkunn = c(1, 6, 10, 15),
     kvardi_lysing = factor(kvardi_lysing, levels = kvardi_lysing)
   )
+)
+
+
 
