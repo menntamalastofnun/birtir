@@ -36,7 +36,7 @@ fa_heildartolu <- function(data, talal) {
 
 # Dæmi um kvarða ----------------------------------------------------------
 
-kvardi_lysing <- c(
+umsogn <- c(
   "Nemandi skilur illa textann. \n",
   "Nemandi skilur textann að hluta, og getur fundið einfaldar upplýsingar  í texta. \n\n",
   "Nemandinn skilur innihald textans, getur auðveldlega fundið upplýsingar í textanum og getur dregið ályktanir. \n\n",
@@ -45,10 +45,14 @@ kvardi_lysing <- c(
 )
 
 kvardi <- list(
-  kvardi_bil = c(1,19),
+  kvardi_bil = c(0,20),
   kvardi_lysing = tibble(
-    einkunn = c(1, 6, 10, 15),
-    kvardi_lysing = factor(kvardi_lysing, levels = kvardi_lysing)
+    einkunn = c(3, 6, 10, 15),
+    lysing = c("Þarfnast mikillar þjálfunar",
+               "Þarfnast þjálfunar",
+               "Á góðri leið",
+               "Framúrskarandi"),
+    umsogn = factor(umsogn, levels = umsogn)
   )
 )
 
