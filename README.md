@@ -32,33 +32,58 @@ This is a basic example which shows you how to solve a common problem:
 ``` r
 library(birtir)
 
+# Dæmi um gögn
+fa_heildartolu <- function(data, talal) {
+  tibble::tibble(
+    kennitala = "310200-3257",
+    nafn_nemanda = "Grettir Ásmundsson",
+    prof_numer = "les07",
+    dagsetnings_profs = "2025-03-17",
+    profhluti = c(
+      "Heildartala", "Orðskilningur",
+      "Djúpur skilningur", "Ályktun",
+      "Bókstaflegur skilningur"
+    ),
+    einkunn = c(talal, 7, 7, 9, 8)
+  )
 
-data <- tibble::tibble(
-  kennitala = "310200-3257",
-  nafn_nemanda = "Grettir Ásmundsson",
-  prof_numer = "les07",
-  dagsetnings_profs = "2025-03-17",
-  profhluti = c(
-    "Heildartala", "Orðskilningur",
-    "Djúpur skilningur", "Ályktun",
-    "Bókstaflegur skilningur"
-  ),
-  einkunn = c(8, 7, 7, 9, 8)
+}
+
+# Dæmi um kvarða
+
+umsogn <- c(
+  "Nemandi skilur illa textann. \n",
+  "Nemandi skilur textann að hluta, og getur fundið einfaldar upplýsingar  í texta. \n\n",
+  "Nemandinn skilur innihald textans, getur auðveldlega fundið upplýsingar í textanum og getur dregið ályktanir. \n\n",
+  "Nemandi sýnir góðan skilning á þeim texta sem hann les, getur lesið á milli línanna og dregið flóknar ályktanir. \n"
+
 )
 
-summary(data)
-#>   kennitala         nafn_nemanda        prof_numer        dagsetnings_profs 
-#>  Length:5           Length:5           Length:5           Length:5          
-#>  Class :character   Class :character   Class :character   Class :character  
-#>  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
-#>                                                                             
-#>                                                                             
-#>                                                                             
-#>   profhluti            einkunn   
-#>  Length:5           Min.   :7.0  
-#>  Class :character   1st Qu.:7.0  
-#>  Mode  :character   Median :8.0  
-#>                     Mean   :7.8  
-#>                     3rd Qu.:8.0  
-#>                     Max.   :9.0
+kvardi <- list(
+  kvardi_bil = c(0,20),
+  kvardi_lysing = tibble::tibble(
+    einkunn = c(3, 6, 10, 15),
+    lysing = c("Þarfnast mikillar þjálfunar",
+               "Þarfnast þjálfunar",
+               "Á góðri leið",
+               "Framúrskarandi"),
+    umsogn = factor(umsogn, levels = umsogn)
+  )
+)
+
+faerni_graf(fa_heildartolu(data, 5), kvardi)
 ```
+
+<img src="man/figures/README-example-1.png" width="100%" />
+
+``` r
+faerni_graf(fa_heildartolu(data, 10), kvardi)
+```
+
+<img src="man/figures/README-example-2.png" width="100%" />
+
+``` r
+faerni_graf(fa_heildartolu(data, 19), kvardi)
+```
+
+<img src="man/figures/README-example-3.png" width="100%" />
