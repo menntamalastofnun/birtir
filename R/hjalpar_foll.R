@@ -1,12 +1,63 @@
+#' litid hjalparfall sem byr til gogn
+#'
+#' @param maelitala nemandans
+#'
+#' @returns prufugogn
+#' @export
+#'
+#' @examples fa_heildartolu(10)
+fa_heildartolu <- function(maelitala) {
+  tibble::tibble(
+    kennitala = "310200-3257",
+    nafn_nemanda = "Grettir Ásmundsson",
+    prof_numer = "les07",
+    dagsetnings_profs = "2025-03-17",
+    profhluti = c(
+      "Heildartala", "Orðskilningur",
+      "Djúpur skilningur", "Ályktun",
+      "Bókstaflegur skilningur"
+    ),
+    einkunn = c(maelitala, 7, 7, 9, 8)
+  )
+
+}
+
+#' Daemi um kvarda
+#'
+#' @returns upplysingum um kvardan
+#' @export
+#'
+#' @examples fa_kvarda()
+fa_kvarda <- function(){
+  umsogn <- c(
+    "Nemandi skilur illa textann. \n",
+    "Nemandi skilur textann að hluta, og getur fundið einfaldar upplýsingar  í texta. \n\n",
+    "Nemandinn skilur innihald textans, getur auðveldlega fundið upplýsingar í textanum og getur dregið ályktanir. \n\n",
+    "Nemandi sýnir góðan skilning á þeim texta sem hann les, getur lesið á milli línanna og dregið flóknar ályktanir. \n"
+
+  )
+
+  list(
+    kvardi_bil = c(0,20),
+    kvardi_lysing = tibble::tibble(
+      einkunn = c(3, 6, 10, 15),
+      lysing = c("Þarfnast mikillar þjálfunar",
+                 "Þarfnast þjálfunar",
+                 "Á góðri leið",
+                 "Framúrskarandi"),
+      umsogn = factor(umsogn, levels = umsogn)
+    )
+  )
+
+}
 
 
-
-#' Title
+#' Litapalleta
 #'
 #' @param litur grunnlitur sem er sidan lystur upp med fj_punkta
 #' @param fj_punkta fjoldi throskuldsgilda sem skipta kvardanum
 #'
-#' @returns
+#' @returns skilar kvarda med N litum
 #' @export
 #'
 #' @examples utbua_litapalletu("#C6D8CD", 4)

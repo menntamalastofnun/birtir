@@ -2,11 +2,14 @@
 #'
 #' @param data einkunnir nemanda
 #' @param kvardi tegund kvarda sem er notadur
-#'
-#' @returns
+#' @importFrom dplyr filter
+#' @importFrom stringr str_wrap
+#' @import ggplot2
+#' @returns skilar mynd af stadsettningu nemanda
 #' @export
 #'
-#' @examples
+#' @examples faerni_graf(fa_heildartolu(5), fa_kvarda())
+#'
 faerni_graf <- function(data, kvardi) {
   heildartala <- data |>
     dplyr::filter(grepl("Heildartala", profhluti))
@@ -47,7 +50,7 @@ faerni_graf <- function(data, kvardi) {
       aes(
         x = fjardlaegd_punkts_fra_texta,
         y = einkunn,
-        label = str_wrap(umsogn , width = 40)
+        label = stringr::str_wrap(umsogn , width = 40)
       ),
       #fill = "#c7fbd2",
       label.size = NA,
@@ -90,8 +93,8 @@ faerni_graf <- function(data, kvardi) {
       axis.ticks.x = element_blank(),
       axis.line.x = element_blank(),
       axis.line.y = element_line(
-        linewidth = 1.5,
-        arrow = grid::arrow(length = unit(0.3, "cm"), ends = "both")
+        linewidth = 1.5#,
+        #arrow = grid::arrow(length = unit(0.3, "cm"), ends = "both")
       ),
       plot.margin = unit(c(1, 1, 2, 1), "cm")
     ) +
@@ -99,7 +102,4 @@ faerni_graf <- function(data, kvardi) {
 
 }
 
-faerni_graf(fa_heildartolu(data, 5), kvardi)
-faerni_graf(fa_heildartolu(data, 2), kvardi)
-faerni_graf(fa_heildartolu(data, 19), kvardi)
-faerni_graf(fa_heildartolu(data, 10), kvardi)
+
