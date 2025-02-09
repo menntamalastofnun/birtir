@@ -12,9 +12,13 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports: 
     cli,
+    dplyr,
+    ggplot2,
     glue,
     lifecycle,
     rlang,
+    stringr,
+    tibble,
     withr
 URL: https://github.com/auv2/birtir
 BugReports: https://github.com/auv2/birtir/issues
