@@ -1,11 +1,19 @@
-
-
-
-
-
+#' Mynd af stadsetningu nemanda a kvarda asamt lysingu
+#'
+#' @param data einkunnir nemanda
+#' @param kvardi tegund kvarda sem er notadur
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 faerni_graf <- function(data, kvardi) {
   heildartala <- data |>
     dplyr::filter(grepl("Heildartala", profhluti))
+
+  kvardi_bil <- kvardi$kvardi_bil
+  kvardi_lysing <- kvardi$kvardi_lysing
+  kvardi_bil
 
   if (nrow(heildartala) != 1) {
     stop(
@@ -15,15 +23,17 @@ faerni_graf <- function(data, kvardi) {
   }
 
 
-
-
-
-
-  fjardlaegd_punkts_fra_texta <- .15
+  fjardlaegd_punkts_fra_texta <- .3
 
 
   heildartala |>
-    ggplot(aes(1, einkunn)) +
+    ggplot(aes(.1, einkunn)) +
+    litud_maelistika(
+      y_range = kvardi_bil,
+      cutoffs = kvardi_lysing$einkunn,
+      alpha = .8,
+      litur = "#c7fbd2"
+    ) +
     geom_point(
       size = 10,
       shape = 21,
@@ -33,21 +43,23 @@ faerni_graf <- function(data, kvardi) {
       show.legend = F
     ) +
     geom_label(
-      data = kvardi,
+      data = kvardi_lysing,
       aes(
-        x = 1 - fjardlaegd_punkts_fra_texta,
+        x = fjardlaegd_punkts_fra_texta,
         y = einkunn,
-        label = str_wrap(kvardi_lysing, width = 40)
+        label = str_wrap(umsogn , width = 40)
       ),
-      fill = "#c7fbd2",
+      #fill = "#c7fbd2",
       label.size = NA,
       show.legend = F,
-      hjust = .01
+      hjust = 0,
+      vjust = 0
     ) +
+    scale_x_continuous(limits = c(0, 1)) +
     scale_y_continuous(
-      breaks = c(2.5, 5.5, 9.5, 14.5, 19),
-      labels = c("þrep 0\n1-3", "þrep 1\n3-6", "þrep 2\n6-10", "þrep 3\n10-13", ""),
-      limits = c(0, 19)
+      breaks = kvardi_lysing$einkunn,
+      labels = kvardi_lysing$lysing,
+      limits = kvardi_bil
     ) +
     theme(
       line = element_line(linetype = 1, colour = "black"),
@@ -83,8 +95,7 @@ faerni_graf <- function(data, kvardi) {
       ),
       plot.margin = unit(c(1, 1, 2, 1), "cm")
     ) +
-    coord_cartesian(ylim = c(0, 21))
-
+    coord_equal(ratio = 1 / 20)
 
 }
 
