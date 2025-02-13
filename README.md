@@ -33,8 +33,7 @@ This is a basic example which shows you how to solve a common problem:
 library(birtir)
 
 # Dæmi um gögn
-fa_heildartolu <- function(talal) {
-  tibble::tibble(
+data <- tibble::tibble(
     kennitala = "310200-3257",
     nafn_nemanda = "Grettir Ásmundsson",
     prof_numer = "les07",
@@ -44,10 +43,8 @@ fa_heildartolu <- function(talal) {
       "Djúpur skilningur", "Ályktun",
       "Bókstaflegur skilningur"
     ),
-    einkunn = c(talal, 7, 7, 9, 8)
+    einkunn = c(10, 7, 7, 9, 8)
   )
-
-}
 
 # Dæmi um kvarða
 
@@ -74,26 +71,26 @@ kvardi <- list(
 
 ``` r
 knitr::opts_chunk$set(dpi=1000)
-lysa_stodu(fa_heildartolu(10), kvardi)
+lysa_stodu(data, kvardi)
 ```
 
 <img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
 
 ``` r
-kortleggja(fa_heildartolu(10), kvardi)
+kortleggja(data, kvardi)
 ```
 
 <img src="man/figures/README-unnamed-chunk-2-2.png" width="100%" />
 
 ``` r
 knitr::opts_chunk$set(dpi=1000)
-lysa_stodu(fa_heildartolu(10), kvardi)
+lysa_stodu(data, kvardi)
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
 ``` r
-kortleggja(fa_heildartolu(10), kvardi)+ggplot2::coord_flip()
+kortleggja(data, kvardi)+ggplot2::coord_flip()
 #> Coordinate system already present. Adding new coordinate system, which will
 #> replace the existing one.
 ```

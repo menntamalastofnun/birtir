@@ -1,6 +1,3 @@
-library(tidyverse)
-
-
 # Dæmi um nemendur --------------------------------------------------------
 
 
@@ -17,8 +14,6 @@ data <- tibble::tibble(
   einkunn = c(8, 7, 7, 9, 8)
 )
 
-data <- fa_heildartolu(2)
-
 
 # Dæmi um kvarða ----------------------------------------------------------
 
@@ -32,7 +27,7 @@ umsogn <- c(
 
 kvardi <- list(
   kvardi_bil = c(0,20),
-  kvardi_lysing = tibble(
+  kvardi_lysing = tibble::tibble(
     einkunn = c(3, 6, 10, 15),
     lysing = c("Þarfnast mikillar þjálfunar",
                "Þarfnast þjálfunar",

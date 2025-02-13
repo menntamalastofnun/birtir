@@ -42,8 +42,7 @@ This is a basic example which shows you how to solve a common problem:
 library(birtir)
 
 # Dæmi um gögn
-fa_heildartolur <- function(talal) {
-  tibble::tibble(
+data <- tibble::tibble(
     kennitala = "310200-3257",
     nafn_nemanda = "Grettir Ásmundsson",
     prof_numer = "les07",
@@ -53,10 +52,8 @@ fa_heildartolur <- function(talal) {
       "Djúpur skilningur", "Ályktun",
       "Bókstaflegur skilningur"
     ),
-    einkunn = c(talal, 7, 7, 9, 8)
+    einkunn = c(10, 7, 7, 9, 8)
   )
-
-}
 
 # Dæmi um kvarða
 
@@ -84,12 +81,12 @@ kvardi <- list(
 
 ```{r}
 knitr::opts_chunk$set(dpi=1000)
-lysa_stodu(fa_heildartolur(10), kvardi)
-kortleggja(fa_heildartolur(10), kvardi)
+lysa_stodu(data, kvardi)
+kortleggja(data, kvardi)
 ```
 
 ```{r}
 knitr::opts_chunk$set(dpi=1000)
-lysa_stodu(fa_heildartolu(10), kvardi)
-kortleggja(fa_heildartolu(10), kvardi)+ggplot2::coord_flip()
+lysa_stodu(data, kvardi)
+kortleggja(data, kvardi)+ggplot2::coord_flip()
 ```
