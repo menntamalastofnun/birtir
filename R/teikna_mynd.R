@@ -102,4 +102,80 @@ lysa_stodu <- function(data, kvardi) {
 
 }
 
+kortleggja <- function(data, kvardi) {
+  heildartala <- data |>
+    dplyr::filter(!grepl("Heildartala", profhluti))
 
+  kvardi_bil <- kvardi$kvardi_bil
+  kvardi_lysing <- kvardi$kvardi_lysing
+  kvardi_bil
+
+  if (nrow(heildartala) == 0) {
+    stop(
+      "Gagnasettið inniheldur ekki undirpróf."
+    )
+  }
+
+
+  fjardlaegd_punkts_fra_texta <- .3
+
+
+  heildartala |>
+    ggplot(aes(profhluti, einkunn)) +
+    litud_maelistika(
+      y_range = kvardi_bil,
+      cutoffs = kvardi_lysing$einkunn,
+      alpha = .8,
+      litur = "#c7fbd2"
+    ) +
+    geom_segment(aes(xend = profhluti,y = 1, yend = einkunn), color = "gray", size = 0.8) +
+    geom_point(
+      size = 6,
+      shape = 21,
+      stroke = 2,
+      color = "black",
+      fill = "#ff681d",
+      show.legend = F
+    ) +
+    scale_y_continuous(
+      breaks = kvardi_lysing$einkunn,
+      labels = kvardi_lysing$lysing,
+      limits = kvardi_bil
+    ) +
+    theme(
+      line = element_line(linetype = 1, colour = "black"),
+      axis.text = element_text(face = "bold", size = rel(1)),
+      text = element_text(colour = "black"),
+      rect = element_rect(
+        fill = NULL,
+        linetype = 0,
+        colour = NA
+      ),
+      legend.background = element_rect(fill = NULL),
+      # legend.position = "top",
+      # legend.direction = "horizontal",
+      # legend.box = "vertical",
+      panel.grid = element_line(colour = NULL, linetype = 3),
+      panel.grid.major = element_line(colour = "black"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.background = element_blank(),
+      # Removes the grey background
+      plot.background = element_blank(),
+      plot.title = element_text(hjust = 0, face = "bold"),
+      strip.background = element_rect(),
+      axis.ticks.y = element_blank(),
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      #axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.line.x = element_blank(),
+      axis.line.y = element_line(
+        linewidth = 1.5#,
+        #arrow = grid::arrow(length = unit(0.3, "cm"), ends = "both")
+      ),
+      plot.margin = unit(c(1, 1, 2, 1), "cm")
+    ) +
+    coord_equal(ratio = 1 / 10)
+
+}
