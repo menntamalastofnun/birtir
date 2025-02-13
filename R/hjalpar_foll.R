@@ -3,6 +3,7 @@
 #' @param maelitala nemandans
 #'
 #' @returns prufugogn
+#' @importFrom stats rnorm
 #' @export
 #'
 #' @examples fa_heildartolu(10)
@@ -16,7 +17,8 @@ fa_heildartolu <- function(maelitala = 10,
                            ),
                            breytileiki = 1.5)
 {
-  maelitolur <- round(rnorm(length(profhlutar) - 1, maelitala, breytileiki))
+  maelitolur <- round(stats::rnorm(length(profhlutar) - 1,
+                            maelitala, breytileiki))
 
   tibble::tibble(
     kennitala = "310200-3257",
@@ -67,11 +69,12 @@ fa_kvarda <- function() {
 #' @param fj_punkta fjoldi throskuldsgilda sem skipta kvardanum
 #'
 #' @returns skilar kvarda med N litum
+#' @importFrom grDevices colorRampPalette
 #' @export
 #'
 #' @examples utbua_litapalletu("#C6D8CD", 4)
 utbua_litapalletu <- function(litur, fj_punkta) {
-  colorRampPalette(c("white", litur))(fj_punkta)
+  grDevices::colorRampPalette(c("white", litur))(fj_punkta)
 }
 
 

@@ -33,7 +33,7 @@ This is a basic example which shows you how to solve a common problem:
 library(birtir)
 
 # Dæmi um gögn
-fa_heildartolu <- function(data, talal) {
+fa_heildartolu <- function(talal) {
   tibble::tibble(
     kennitala = "310200-3257",
     nafn_nemanda = "Grettir Ásmundsson",
@@ -71,19 +71,19 @@ kvardi <- list(
   )
 )
 
-lysa_stodu(fa_heildartolu(data, 5), kvardi)
+lysa_stodu(fa_heildartolu(5), kvardi)
 ```
 
 <img src="man/figures/README-example-1.png" width="100%" />
 
 ``` r
-lysa_stodu(fa_heildartolu(data, 10), kvardi)
+kortleggja(fa_heildartolu(10), kvardi)
 ```
 
 <img src="man/figures/README-example-2.png" width="100%" />
 
 ``` r
-lysa_stodu(fa_heildartolu(data, 19), kvardi)
+lysa_stodu(fa_heildartolu(6), kvardi)
 ```
 
 <img src="man/figures/README-example-3.png" width="100%" />

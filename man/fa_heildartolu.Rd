@@ -4,7 +4,12 @@
 \alias{fa_heildartolu}
 \title{litid hjalparfall sem byr til gogn}
 \usage{
-fa_heildartolu(maelitala)
+fa_heildartolu(
+  maelitala = 10,
+  profhlutar = c("Heildartala", "Orðskilningur", "Djúpur skilningur", "Ályktun",
+    "Bókstaflegur skilningur"),
+  breytileiki = 1.5
+)
 }
 \arguments{
 \item{maelitala}{nemandans}

@@ -20,8 +20,8 @@ lysa_stodu <- function(data, kvardi) {
 
   if (nrow(heildartala) != 1) {
     stop(
-      "Gagnasettið inniheldur ekki prófhlutan heildartölu.
-      Athugið hvort nafnið sé ekki rétt skrifað Heildartala."
+      "Gagnasettid inniheldur ekki profhlutan heildartolu.
+      Athugid hvort nafnid se ekki rett skrifad Heildartala."
     )
   }
 
@@ -102,6 +102,18 @@ lysa_stodu <- function(data, kvardi) {
 
 }
 
+#' Mynd af profil nemandans
+#'
+#' @param data einkunnir nemanda
+#' @param kvardi tegund kvarda sem er notadur
+#' @importFrom dplyr filter
+#' @importFrom stringr str_wrap
+#' @import ggplot2
+#' @returns skilar mynd af stadsettningu nemanda
+#' @export
+#'
+#' @examples kortleggja(fa_heildartolu(5), fa_kvarda())
+#'
 kortleggja <- function(data, kvardi) {
   heildartala <- data |>
     dplyr::filter(!grepl("Heildartala", profhluti))
@@ -112,7 +124,7 @@ kortleggja <- function(data, kvardi) {
 
   if (nrow(heildartala) == 0) {
     stop(
-      "Gagnasettið inniheldur ekki undirpróf."
+      "Gagnasettid inniheldur ekki undirprof."
     )
   }
 
