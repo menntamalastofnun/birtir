@@ -42,7 +42,7 @@ This is a basic example which shows you how to solve a common problem:
 library(birtir)
 
 # Dæmi um gögn
-fa_heildartolu <- function(talal) {
+fa_heildartolur <- function(talal) {
   tibble::tibble(
     kennitala = "310200-3257",
     nafn_nemanda = "Grettir Ásmundsson",
@@ -80,7 +80,16 @@ kvardi <- list(
   )
 )
 
-lysa_stodu(fa_heildartolu(5), kvardi)
-kortleggja(fa_heildartolu(10), kvardi)
-lysa_stodu(fa_heildartolu(6), kvardi)
+```
+
+```{r}
+knitr::opts_chunk$set(dpi=1000)
+lysa_stodu(fa_heildartolur(10), kvardi)
+kortleggja(fa_heildartolur(10), kvardi)
+```
+
+```{r}
+knitr::opts_chunk$set(dpi=1000)
+lysa_stodu(fa_heildartolu(10), kvardi)
+kortleggja(fa_heildartolu(10), kvardi)+ggplot2::coord_flip()
 ```

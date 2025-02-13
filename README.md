@@ -70,20 +70,32 @@ kvardi <- list(
     umsogn = factor(umsogn, levels = umsogn)
   )
 )
-
-lysa_stodu(fa_heildartolu(5), kvardi)
 ```
 
-<img src="man/figures/README-example-1.png" width="100%" />
+``` r
+knitr::opts_chunk$set(dpi=1000)
+lysa_stodu(fa_heildartolu(10), kvardi)
+```
+
+<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
 
 ``` r
 kortleggja(fa_heildartolu(10), kvardi)
 ```
 
-<img src="man/figures/README-example-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-2-2.png" width="100%" />
 
 ``` r
-lysa_stodu(fa_heildartolu(6), kvardi)
+knitr::opts_chunk$set(dpi=1000)
+lysa_stodu(fa_heildartolu(10), kvardi)
 ```
 
-<img src="man/figures/README-example-3.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+
+``` r
+kortleggja(fa_heildartolu(10), kvardi)+ggplot2::coord_flip()
+#> Coordinate system already present. Adding new coordinate system, which will
+#> replace the existing one.
+```
+
+<img src="man/figures/README-unnamed-chunk-3-2.png" width="100%" />

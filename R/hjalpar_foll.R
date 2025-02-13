@@ -1,7 +1,8 @@
 #' litid hjalparfall sem byr til gogn
 #'
 #' @param maelitala nemandans
-#'
+#' @param profhlutar listi yfir profhluta sem profid samanstendur ur
+#' @param breytileiki staerd notud til ad akvarda breytileika i undirprofum
 #' @returns prufugogn
 #' @importFrom stats rnorm
 #' @export
@@ -77,6 +78,16 @@ utbua_litapalletu <- function(litur, fj_punkta) {
   grDevices::colorRampPalette(c("white", litur))(fj_punkta)
 }
 
+
+#' Byr til litada maelistiku
+#'
+#' @param y_range haesta og laegsta gildi a kvardanum
+#' @param cutoffs thar sem skilin a milli flokka er
+#' @param litur a kvardanum
+#' @param alpha gildi sem lysir gegnsaei litarins
+#'
+#' @returns litadri maelistiku fyrir ggplot
+#' @export
 
 litud_maelistika <-  function(y_range,
                               cutoffs,

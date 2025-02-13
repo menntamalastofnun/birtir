@@ -3,6 +3,7 @@
 export(fa_heildartolu)
 export(fa_kvarda)
 export(kortleggja)
+export(litud_maelistika)
 export(lysa_stodu)
 export(utbua_litapalletu)
 import(ggplot2)

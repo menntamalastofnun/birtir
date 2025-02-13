@@ -13,6 +13,10 @@ fa_heildartolu(
 }
 \arguments{
 \item{maelitala}{nemandans}
+
+\item{profhlutar}{listi yfir profhluta sem profid samanstendur ur}
+
+\item{breytileiki}{staerd notud til ad akvarda breytileika i undirprofum}
 }
 \value{
 prufugogn

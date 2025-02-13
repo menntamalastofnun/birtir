@@ -140,7 +140,8 @@ kortleggja <- function(data, kvardi) {
       alpha = .8,
       litur = "#c7fbd2"
     ) +
-    geom_segment(aes(xend = profhluti,y = 1, yend = einkunn), color = "gray", size = 0.8) +
+    geom_segment(aes(xend = profhluti,y = 1, yend = einkunn),
+                 color = "gray", linewidth =  0.8) +
     geom_point(
       size = 6,
       shape = 21,
