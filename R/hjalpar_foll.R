@@ -6,18 +6,25 @@
 #' @export
 #'
 #' @examples fa_heildartolu(10)
-fa_heildartolu <- function(maelitala) {
+fa_heildartolu <- function(maelitala = 10,
+                           profhlutar = c(
+                             "Heildartala",
+                             "Orðskilningur",
+                             "Djúpur skilningur",
+                             "Ályktun",
+                             "Bókstaflegur skilningur"
+                           ),
+                           breytileiki = 1.5)
+{
+  maelitolur <- round(rnorm(length(profhlutar) - 1, maelitala, breytileiki))
+
   tibble::tibble(
     kennitala = "310200-3257",
     nafn_nemanda = "Grettir Ásmundsson",
     prof_numer = "les07",
     dagsetnings_profs = "2025-03-17",
-    profhluti = c(
-      "Heildartala", "Orðskilningur",
-      "Djúpur skilningur", "Ályktun",
-      "Bókstaflegur skilningur"
-    ),
-    einkunn = c(maelitala, 7, 7, 9, 8)
+    profhluti = profhlutar,
+    einkunn = c(maelitala, maelitolur)
   )
 
 }
@@ -28,7 +35,7 @@ fa_heildartolu <- function(maelitala) {
 #' @export
 #'
 #' @examples fa_kvarda()
-fa_kvarda <- function(){
+fa_kvarda <- function() {
   umsogn <- c(
     "Nemandi skilur illa textann. \n",
     "Nemandi skilur textann að hluta, og getur fundið einfaldar upplýsingar  í texta. \n\n",
@@ -38,13 +45,15 @@ fa_kvarda <- function(){
   )
 
   list(
-    kvardi_bil = c(0,20),
+    kvardi_bil = c(0, 20),
     kvardi_lysing = tibble::tibble(
       einkunn = c(3, 6, 10, 15),
-      lysing = c("Þarfnast mikillar þjálfunar",
-                 "Þarfnast þjálfunar",
-                 "Á góðri leið",
-                 "Framúrskarandi"),
+      lysing = c(
+        "Þarfnast mikillar þjálfunar",
+        "Þarfnast þjálfunar",
+        "Á góðri leið",
+        "Framúrskarandi"
+      ),
       umsogn = factor(umsogn, levels = umsogn)
     )
   )
@@ -66,8 +75,7 @@ utbua_litapalletu <- function(litur, fj_punkta) {
 }
 
 
-litud_maelistika <-  function(
-                              y_range,
+litud_maelistika <-  function(y_range,
                               cutoffs,
                               litur = "#C6D8CD",
                               alpha = .8) {
@@ -79,19 +87,19 @@ litud_maelistika <-  function(
   segments <- c(y_range[1], cutoffs, y_range[2])
 
 
-  colors <- utbua_litapalletu(litur, length(cutoffs)+1)
+  colors <- utbua_litapalletu(litur, length(cutoffs) + 1)
 
 
-    map(c(1,seq_along(cutoffs)+1), function(i) {
-      annotate(
-        "rect",
-        ymin = segments[i],
-        ymax = segments[i + 1],
-        xmin = -Inf,
-        xmax = Inf,
-        fill = colors[i],
-        alpha = alpha
-      )
-    })
+  map(c(1, seq_along(cutoffs) + 1), function(i) {
+    annotate(
+      "rect",
+      ymin = segments[i],
+      ymax = segments[i + 1],
+      xmin = -Inf,
+      xmax = Inf,
+      fill = colors[i],
+      alpha = alpha
+    )
+  })
 
 }
