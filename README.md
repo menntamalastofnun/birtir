@@ -71,19 +71,19 @@ kvardi <- list(
   )
 )
 
-faerni_graf(fa_heildartolu(data, 5), kvardi)
+lysa_stodu(fa_heildartolu(data, 5), kvardi)
 ```
 
 <img src="man/figures/README-example-1.png" width="100%" />
 
 ``` r
-faerni_graf(fa_heildartolu(data, 10), kvardi)
+lysa_stodu(fa_heildartolu(data, 10), kvardi)
 ```
 
 <img src="man/figures/README-example-2.png" width="100%" />
 
 ``` r
-faerni_graf(fa_heildartolu(data, 19), kvardi)
+lysa_stodu(fa_heildartolu(data, 19), kvardi)
 ```
 
 <img src="man/figures/README-example-3.png" width="100%" />

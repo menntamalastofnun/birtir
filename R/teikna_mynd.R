@@ -8,9 +8,9 @@
 #' @returns skilar mynd af stadsettningu nemanda
 #' @export
 #'
-#' @examples faerni_graf(fa_heildartolu(5), fa_kvarda())
+#' @examples lysa_stodu(fa_heildartolu(5), fa_kvarda())
 #'
-faerni_graf <- function(data, kvardi) {
+lysa_stodu <- function(data, kvardi) {
   heildartala <- data |>
     dplyr::filter(grepl("Heildartala", profhluti))
 

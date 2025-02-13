@@ -2,7 +2,7 @@
 
 export(fa_heildartolu)
 export(fa_kvarda)
-export(faerni_graf)
+export(lysa_stodu)
 export(utbua_litapalletu)
 import(ggplot2)
 import(rlang)
