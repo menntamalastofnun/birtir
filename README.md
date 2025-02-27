@@ -4,6 +4,7 @@
 # birtir
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 Megin tilgangur með `birti` er að búa til myndir, töflur og skýrslur
@@ -13,7 +14,7 @@ einstakar myndir og töflur en einnig til þess að hnýta saman skýrslur.
 Hér má sjá grunnmynd á virkni `birtis` hugmyndin er enn í þróun svo
 myndin getur breyst.
 
-![](images/clipboard-3395613513.png)
+![](images/image.png)
 
 ## Installation
 
