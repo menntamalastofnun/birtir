@@ -92,13 +92,15 @@ utbua_litapalletu <- function(litur, fj_punkta) {
 litud_maelistika <-  function(y_range,
                               cutoffs,
                               litur = "#C6D8CD",
-                              alpha = .8) {
+                              alpha = .8,
+                              rev = FALSE) {
   # Ensure cutoffs are sorted and within range
   cutoffs <- sort(unique(cutoffs))
   cutoffs <- cutoffs[cutoffs > y_range[1] & cutoffs < y_range[2]]
 
   # Define segment boundaries
   segments <- c(y_range[1], cutoffs, y_range[2])
+  if(rev)  segments<- rev(segments)
 
 
   colors <- utbua_litapalletu(litur, length(cutoffs) + 1)
