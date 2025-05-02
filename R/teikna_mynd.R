@@ -192,3 +192,36 @@ kortleggja <- function(data, kvardi) {
     coord_equal(ratio = 1 / 10)
 
 }
+
+
+#' Prenta ut myndir
+#'
+#' @param data einkunnir nemanda
+#' @param kvardi tegund kvarda sem er notadur
+#' @importFrom dplyr filter
+#' @returns myndir fyrir nidurstodur
+#' @export
+#'
+#' @examples
+#' data <- fa_heildartolu()
+#' kvardi <- fa_kvarda()
+#' teikna_mynd(data,kvardi)
+
+
+teikna_mynd <- function(data, kvardi) {
+  heildartala <- data |>
+    dplyr::filter(grepl("Heildartala", profhluti))
+
+  undirthaettir <- data |>
+    dplyr::filter(!grepl("Heildartala", profhluti))
+
+  if (nrow(heildartala) == 1) {
+    lysa_stodu(heildartala, kvardi) |> print()
+  }
+
+  if (nrow(undirthaettir) > 0) {
+    kortleggja(undirthaettir, kvardi) |> print()
+  }
+
+
+}
