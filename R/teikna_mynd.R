@@ -16,7 +16,8 @@ lysa_stodu <- function(data, kvardi) {
 
   kvardi_bil <- kvardi$kvardi_bil
   kvardi_lysing <- kvardi$kvardi_lysing
-  kvardi_bil
+  kvardi_texta_bil <- c(3.5, 9.5, 16)
+#  kvardi_bil
 
   if (nrow(heildartala) != 1) {
     stop(
