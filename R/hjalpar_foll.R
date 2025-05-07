@@ -75,7 +75,7 @@ fa_kvarda <- function() {
 #'
 #' @examples utbua_litapalletu("#C6D8CD", 4)
 utbua_litapalletu <- function(litur, fj_punkta) {
-  grDevices::colorRampPalette(c("white", litur))(fj_punkta)
+  grDevices::colorRampPalette(c("white", litur))(fj_punkta+1)
 }
 
 
