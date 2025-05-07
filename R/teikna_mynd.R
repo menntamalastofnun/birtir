@@ -35,8 +35,17 @@ lysa_stodu <- function(data, kvardi) {
     litud_maelistika(
       y_range = kvardi_bil,
       cutoffs = kvardi_lysing$einkunn,
-      alpha = .8,
-      litur = "#c7fbd2"
+      alpha = 1,
+      litur = "#D8C1FF"
+    ) +
+    geom_errorbar(
+      aes(
+        ymin = einkunn - sf,
+        ymax = einkunn + sf
+      ),
+      width = 0.05,
+      color = "#292A4B",
+      linewidth = 0.6
     ) +
     geom_point(
       size = 10,
