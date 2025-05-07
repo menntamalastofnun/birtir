@@ -48,25 +48,24 @@ lysa_stodu <- function(data, kvardi) {
       linewidth = 0.6
     ) +
     geom_point(
-      size = 10,
+      size = 3,
       shape = 21,
-      stroke = 2,
-      color = "black",
-      fill =  "black",
+      stroke = 1,
+      color = "#292A4B",
+      fill =  "#292A4B",
       show.legend = F
     ) +
-    geom_label(
+    geom_text(
       data = kvardi_lysing,
       aes(
         x = fjardlaegd_punkts_fra_texta,
-        y = einkunn,
-        label = stringr::str_wrap(umsogn , width = 40)
+        y = kvardi_texta_bil,  # use the adjusted y-coordinate
+        label = stringr::str_wrap(umsogn, width = 40)
       ),
-      #fill = "#c7fbd2",
-      label.size = NA,
-      show.legend = F,
       hjust = 0,
-      vjust = 0
+      vjust = 0.5,  # center vertically
+      color = "#292A4B",
+      size = 3.5
     ) +
     scale_x_continuous(limits = c(0, 1)) +
     scale_y_continuous(
