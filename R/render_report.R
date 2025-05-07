@@ -1,5 +1,5 @@
 library(quarto)
 
 quarto_render(
-  input = "report_template.qmd"
+  input = "R/report_template.qmd"
 )
