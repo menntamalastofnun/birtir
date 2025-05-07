@@ -133,6 +133,7 @@ lysa_stodu <- function(data, kvardi) {
     coord_equal(ratio = 1 / 20)
 }
 
+
 #' Mynd af profil nemandans
 #'
 #' @param data einkunnir nemanda
@@ -168,27 +169,45 @@ kortleggja <- function(data, kvardi) {
     litud_maelistika(
       y_range = kvardi_bil,
       cutoffs = kvardi_lysing$einkunn,
-      alpha = .8,
-      litur = "#c7fbd2"
+      alpha = 1,
+      litur = "#D8C1FF"
     ) +
-    geom_segment(aes(xend = profhluti,y = 1, yend = einkunn),
-                 color = "gray", linewidth =  0.8) +
+    # Tek út línurnar fyrir hvern punkt sem tengja við titilinn á x-ás
+    # geom_segment(aes(xend = profhluti,y = 1, yend = einkunn),
+    #              color = "#292A4B", linewidth =  0.5) +
+    geom_errorbar(
+      aes(
+        ymin = einkunn - sf,
+        ymax = einkunn + sf
+      ),
+      width = 0.05,
+      color = "#292A4B",
+      linewidth = 0.6
+    ) +
+
     geom_point(
-      size = 6,
+      size = 2,
       shape = 21,
       stroke = 2,
-      color = "black",
-      fill = "#ff681d",
+      color = "#292A4B",
+      fill = "#292A4B",
       show.legend = F
     ) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) +
+    # scale_y_continuous(
+    #   breaks = kvardi_lysing$einkunn,
+    #   labels = kvardi_lysing$lysing,
+    #   limits = kvardi_bil
+    # ) +
     scale_y_continuous(
-      breaks = kvardi_lysing$einkunn,
-      labels = kvardi_lysing$lysing,
-      limits = kvardi_bil
+      limits = kvardi_bil,
+      breaks = seq(from  = kvardi_bil[1], to = kvardi_bil[2], by = 1),
+      name = "Mælitala"
     ) +
     theme(
-      line = element_line(linetype = 1, colour = "black"),
+      line = element_line(linetype = 1, colour = "#292A4B"),
       axis.text = element_text(face = "bold", size = rel(1)),
+      #axis.text.x = element_text(angle = 45, hjust = 1), # Bætti við til að snúa labels á x-ás þannig að þau blandist ekki inn í hvert annað
       text = element_text(colour = "black"),
       rect = element_rect(
         fill = NULL,
@@ -199,9 +218,10 @@ kortleggja <- function(data, kvardi) {
       # legend.position = "top",
       # legend.direction = "horizontal",
       # legend.box = "vertical",
-      panel.grid = element_line(colour = NULL, linetype = 3),
-      panel.grid.major = element_line(colour = "black"),
+      panel.grid = element_line(color = NULL, linetype = 3),
+      panel.grid.major = element_line(colour = "#292A4B"),
       panel.grid.major.x = element_blank(),
+      panel.grid.major.y = element_blank(),
       panel.grid.minor = element_blank(),
       panel.background = element_blank(),
       # Removes the grey background
@@ -210,12 +230,13 @@ kortleggja <- function(data, kvardi) {
       strip.background = element_rect(),
       axis.ticks.y = element_blank(),
       axis.title.x = element_blank(),
-      axis.title.y = element_blank(),
+      # axis.title.y = element_blank(),
       #axis.text.x = element_blank(),
       axis.ticks.x = element_blank(),
       axis.line.x = element_blank(),
       axis.line.y = element_line(
-        linewidth = 1.5#,
+        linewidth = 1#, # Breytti úr 1.5
+
         #arrow = grid::arrow(length = unit(0.3, "cm"), ends = "both")
       ),
       plot.margin = unit(c(1, 1, 2, 1), "cm")
@@ -223,7 +244,6 @@ kortleggja <- function(data, kvardi) {
     coord_equal(ratio = 1 / 10)
 
 }
-
 
 #' Prenta ut myndir
 #'
