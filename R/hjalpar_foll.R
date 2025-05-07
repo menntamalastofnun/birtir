@@ -89,24 +89,25 @@ utbua_litapalletu <- function(litur, fj_punkta) {
 #' @returns litadri maelistiku fyrir ggplot
 #' @export
 
-litud_maelistika <-  function(y_range,
-                              cutoffs,
-                              litur = "#C6D8CD",
-                              alpha = .8,
-                              rev = FALSE) {
+litud_maelistika <- function(y_range,
+                             cutoffs,
+                             litur = "#D8C1FF",  # base purple
+                             alpha = 1) {
   # Ensure cutoffs are sorted and within range
   cutoffs <- sort(unique(cutoffs))
   cutoffs <- cutoffs[cutoffs > y_range[1] & cutoffs < y_range[2]]
 
   # Define segment boundaries
   segments <- c(y_range[1], cutoffs, y_range[2])
-  if(rev)  segments<- rev(segments)
 
+  # Generate 5-color palette (light to dark)
+  base_colors <- colorRampPalette(c("white", litur))(5)
 
-  colors <- utbua_litapalletu(litur, length(cutoffs) + 1)
+  # Assign the darkest color to top two segments
+  colors <- c(base_colors[5], base_colors[3], base_colors[2], base_colors[2])
 
-
-  map(c(1, seq_along(cutoffs) + 1), function(i) {
+  # Create annotation rectangles
+  map(seq_along(colors), function(i) {
     annotate(
       "rect",
       ymin = segments[i],
@@ -117,5 +118,4 @@ litud_maelistika <-  function(y_range,
       alpha = alpha
     )
   })
-
 }
