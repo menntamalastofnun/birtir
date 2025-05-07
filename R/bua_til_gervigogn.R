@@ -33,7 +33,7 @@ df <- tibble::tibble(
 umsogn <- c(
   "Nemandi skilur illa textann. \n",
   "Nemandi skilur textann að hluta, og getur fundið einfaldar upplýsingar  í texta. \n\n",
-  "Nemandinn skilur innihald textans, getur auðveldlega fundið upplýsingar í textanum og getur dregið ályktanir. # \n\n",
+  "Nemandinn skilur innihald textans, getur auðveldlega fundið upplýsingar í textanum og getur dregið ályktanir. \n\n",
   #"Nemandi sýnir góðan skilning á þeim texta sem hann les, getur lesið á milli línanna og dregið flóknar ályktanir. \n"
 
 )
