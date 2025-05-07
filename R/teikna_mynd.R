@@ -42,7 +42,7 @@ lysa_stodu <- function(data, kvardi) {
       shape = 21,
       stroke = 2,
       color = "black",
-      fill = "#ff681d",
+      fill =  "black",
       show.legend = F
     ) +
     geom_label(
