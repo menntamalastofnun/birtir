@@ -67,11 +67,11 @@ lysa_stodu <- function(data, kvardi) {
       color = "#292A4B",
       size = 3.5
     ) +
-    scale_x_continuous(limits = c(0, 1)) +
+    scale_x_continuous(limits = c(0, 1.5)) +
     scale_y_continuous(
-      breaks = kvardi_lysing$einkunn,
-      labels = kvardi_lysing$lysing,
-      limits = kvardi_bil
+      limits = kvardi_bil,
+      breaks = seq(from  = kvardi_bil[1], to = kvardi_bil[2], by = 1),
+      name = "Mælitala"
     ) +
     theme(
       line = element_line(linetype = 1, colour = "black"),
