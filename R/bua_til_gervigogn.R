@@ -15,7 +15,7 @@
 # )
 
 
-data <- tibble::tibble(
+df <- tibble::tibble(
   kennitala = "310200-3257",
   nafn_nemanda = "Grettir Ásmundsson",
   prof_numer = "les07",
