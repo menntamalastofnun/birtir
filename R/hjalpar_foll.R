@@ -104,7 +104,7 @@ litud_maelistika <- function(y_range,
   base_colors <- colorRampPalette(c("white", litur))(5)
 
   # Assign the darkest color to top two segments
-  colors <- c(base_colors[5], base_colors[3], base_colors[2], base_colors[2])
+  colors <- c(base_colors[5], base_colors[4], base_colors[3], base_colors[2])
 
   # Create annotation rectangles
   map(seq_along(colors), function(i) {
