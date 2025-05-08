@@ -16,7 +16,7 @@ lysa_stodu <- function(data, kvardi) {
 
   kvardi_bil <- kvardi$kvardi_bil # kvardi bil nær frá 0 til 20
   kvardi_lysing <- kvardi$kvardi_lysing
-  kvardi_texta_bil <- c(3.5, 9.5, 16)
+  kvardi_texta_bil <- c(2, 5, 9.5, 15.5)
 
   if (nrow(heildartala) != 1) {
     stop(
@@ -32,7 +32,7 @@ lysa_stodu <- function(data, kvardi) {
   heildartala |>
     ggplot(aes(.1, einkunn)) +
     litud_maelistika(
-      y_range = kvardi_bil,
+      y_range = c(kvardi_bil[1]+1, kvardi_bil[2]-1),
       cutoffs = kvardi_lysing$einkunn,
       alpha = 1,
       litur = "#D8C1FF" # Breytti litnum úr #C7FBD2
@@ -87,7 +87,7 @@ lysa_stodu <- function(data, kvardi) {
     scale_x_continuous(limits = c(0, 1.5)) + # breytti limits úr c(0, 1)
     scale_y_continuous(
       limits = kvardi_bil,
-      breaks = seq(from  = kvardi_bil[1], to = kvardi_bil[2], by = 1),
+      breaks = seq(from  = kvardi_bil[1]+1, to = kvardi_bil[2]-1, by = 1),
       name = "Mælitala"
     ) +
     #scale_y_continuous(
@@ -167,7 +167,7 @@ kortleggja <- function(data, kvardi) {
   heildartala |>
     ggplot(aes(profhluti, einkunn)) +
     litud_maelistika(
-      y_range = kvardi_bil,
+      y_range = c(kvardi_bil[1]+1, kvardi_bil[2]-1),
       cutoffs = kvardi_lysing$einkunn,
       alpha = 1,
       litur = "#D8C1FF"
@@ -200,8 +200,8 @@ kortleggja <- function(data, kvardi) {
     #   limits = kvardi_bil
     # ) +
     scale_y_continuous(
-      limits = kvardi_bil,
-      breaks = seq(from  = kvardi_bil[1], to = kvardi_bil[2], by = 1),
+      limits = c(1, 19), #kvardi_bil[1]+1, kvardi_bil[2]-1),
+      breaks = seq(from  = kvardi_bil[1]+1, to = kvardi_bil[2]-1, by = 1),
       name = "Mælitala"
     ) +
     theme(
