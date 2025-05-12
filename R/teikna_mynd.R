@@ -253,9 +253,20 @@ teikna_mynd <- function(data, kvardi) {
 
 
 #######################################################
-# Mynd af atriðum nemanda - rétt/röng svör per atriði
 
-plot_einstaklings_svor <- function(df_items) {
+#' Mynd af atriðum nemanda - rétt/röng svör per atriði
+#'
+#' @param df_items einkunnir nemanda á atriðalevel
+#' @importFrom dplyr filter
+#' @importFrom stringr str_wrap
+#' @import ggplot2
+#' @returns skilar mynd af svörum nemenda eftir atriði og þyngd atriða
+#' @export
+#'
+#' @examples einstaklingar_atridi(df_items)
+#'
+
+einstaklingar_atridi <- function(df_items) {
 
   # Sort the data by difficulty and item_id
   df_student <- df_items %>%
