@@ -253,7 +253,7 @@ teikna_mynd <- function(data, kvardi) {
 
 
 #######################################################
-
+# Mynd af atriðum nemanda - rétt/röng svör per atriði
 
 plot_einstaklings_svor <- function(df_items) {
 
