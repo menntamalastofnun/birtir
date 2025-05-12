@@ -54,22 +54,6 @@ lysa_stodu <- function(data, kvardi) {
       fill = "#292A4B", # Breytt úr "black"
       show.legend = F
     ) +
-    # geom_label(
-    #   data = kvardi_lysing,
-    #   aes(
-    #     x = fjardlaegd_punkts_fra_texta,
-    #     y = einkunn,
-    #     label = stringr::str_wrap(umsogn , width = 40)
-    #     #label = padded_umsogn # Bætti við padded_umsogn í reprt_tmpl þegar ég var að búa til kvardann
-    #   ),
-    #   #fill = "#c7fbd2",
-    #   label.size = NA,
-    #   fill = "white", # bætti við
-    #   #color = "black",
-    #   #show.legend = F,
-    #   hjust = 0,
-    #   vjust = 0
-    # )
     geom_text(
       data = kvardi_lysing,
       aes(
@@ -90,11 +74,6 @@ lysa_stodu <- function(data, kvardi) {
       breaks = seq(from  = kvardi_bil[1]+1, to = kvardi_bil[2]-1, by = 1),
       name = "Mælitala"
     ) +
-    #scale_y_continuous(
-    # breaks = kvardi_lysing$einkunn,
-    #labels = kvardi_lysing$lysing,
-    #limits = kvardi_bil
-    #) +
     theme(
       line = element_line(linetype = 1, colour = "#292A4B"), # Breytti litnum úr "black"
       axis.text = element_text(face = "bold", size = rel(1)),
@@ -194,11 +173,6 @@ kortleggja <- function(data, kvardi) {
       show.legend = F
     ) +
     scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) +
-    # scale_y_continuous(
-    #   breaks = kvardi_lysing$einkunn,
-    #   labels = kvardi_lysing$lysing,
-    #   limits = kvardi_bil
-    # ) +
     scale_y_continuous(
       limits = c(1, 19), #kvardi_bil[1]+1, kvardi_bil[2]-1),
       breaks = seq(from  = kvardi_bil[1]+1, to = kvardi_bil[2]-1, by = 1),
@@ -276,3 +250,81 @@ teikna_mynd <- function(data, kvardi) {
 
 
 }
+
+
+#######################################################
+
+
+plot_einstaklings_svor <- function(df_items) {
+
+  # Sort the data by difficulty and item_id
+  df_student <- df_items %>%
+    dplyr::mutate(
+      difficulty = factor(difficulty, levels = c("Mjög létt", "Létt", "Þungt", "Mjög þungt"))
+    ) %>%
+    dplyr::arrange(difficulty, item_id) %>%
+    dplyr::mutate(
+      item_id = factor(item_id, levels = unique(item_id))  # fix y-axis order
+    )
+
+  # Plot
+  ggplot(df_student, aes(x = difficulty, y = item_id)) +
+    geom_point(
+      aes(fill = student_response),
+      shape = 21,
+      color = "#292A4B",
+      size = 5,
+      stroke = 1
+    ) +
+    scale_fill_manual(
+      values = c("TRUE" = "#292A4B", "FALSE" = "white"),
+      labels = c("TRUE" = "Rétt", "FALSE" = "Rangt"), # Label the legend
+      name = ""
+      #guide = FALSE
+    ) +
+    scale_y_discrete(limits = levels(df_student$item_id)) +
+    labs(
+      # title = paste0("Svör hjá ", df_student$nafn[1]),
+      x = "",
+      y = ""
+    ) +
+    theme_minimal() +
+    theme(
+      line = element_line(linetype = 1, colour = "#292A4B"),
+      axis.text = element_text(face = "bold", size = rel(1)),
+      #axis.text.x = element_text(angle = 45, hjust = 1), # Bætti við til að snúa labels á x-ás þannig að þau blandist ekki inn í hvert annað
+      text = element_text(colour = "black"),
+      rect = element_rect(
+        fill = NULL,
+        linetype = 0,
+        colour = NA
+      ),
+      legend.position = "top",
+      legend.background = element_rect(fill = NULL),
+      # legend.position = "top",
+      # legend.direction = "horizontal",
+      # legend.box = "vertical",
+      panel.grid = element_line(color = NULL, linetype = 3),
+      panel.grid.major = element_line(colour = "#292A4B"),
+      panel.grid.major.x = element_blank(),
+      #panel.grid.major.y = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.background = element_blank(),
+      # Removes the grey background
+      plot.background = element_blank(),
+      plot.title = element_text(hjust = 0, face = "bold"),
+      strip.background = element_rect(),
+      axis.ticks.y = element_blank(),
+      axis.title.x = element_blank(),
+      # axis.title.y = element_blank(),
+      #axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.line.x = element_line(
+        linewidth = 1),
+      axis.line.y = element_blank(),
+      plot.margin = unit(c(1, 1, 2, 1), "cm")
+    )
+}
+
+
+

@@ -107,7 +107,7 @@ litud_maelistika <- function(y_range,
   colors <- c(base_colors[5], base_colors[4], base_colors[3], base_colors[2])
 
   # Create annotation rectangles
-  map(seq_along(colors), function(i) {
+  purrr::map(seq_along(colors), function(i) {
     annotate(
       "rect",
       ymin = segments[i],
@@ -119,3 +119,19 @@ litud_maelistika <- function(y_range,
     )
   })
 }
+
+
+#' Býr til töflu með einkunnum hvers nemanda
+#'
+#' @param df_bekkur Gagnarammi með upplýsingum um nemendur og mælitölur
+#' @returns Gögn í töfluformi með nafni og einkunn
+#' @export
+#'
+#' @examples
+#' búa_toflu(df_bekkur)
+uppsetning_toflu <- function(df_bekkur, kvardi) {
+  df_bekkur |>
+    dplyr::select(nafn_nemenda, maelitala) |>
+    dplyr::rename(Mælitala = maelitala, Nafn = nafn_nemenda)
+}
+
