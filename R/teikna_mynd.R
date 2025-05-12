@@ -264,6 +264,18 @@ teikna_mynd <- function(data, kvardi) {
 #' @export
 #'
 #' @examples einstaklingar_atridi(df_items)
+#' Áður en kallað er á fallið þarf að raða gögnunum með því að keyra þennan kóða þar sem df_atrdiði
+#'
+#' # Raða x-ásnum og y-ásnum þannig að punktarnir flokkist rétt saman
+#' df_student <- df_atridi %>%
+#'   dplyr::mutate(
+#'     difficulty = factor(difficulty, levels = c("Mjög létt", "Létt", "Þungt", "Mjög þungt"))
+#'   ) %>%
+#'   dplyr::arrange(difficulty, item_id) %>%  # Order by difficulty, then item_id
+#'   mutate(student_response = factor(student_response, levels = c(TRUE, FALSE)))
+#'
+#'
+#' df_student <- subset(df_student, nafn == "María Birna Karlsdóttir")
 #'
 
 einstaklingar_atridi <- function(df_items) {
