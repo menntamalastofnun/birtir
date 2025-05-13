@@ -40,11 +40,17 @@ kvardi <- list(
 # Dæmi um bekkjargögn ----------------------------------------------------------
 df_bekkur <- tibble::tibble(
   #kennitala = "310200-3257",
-  nafn_nemenda = c("Grettir Ásmundsson", "Helena Birgisdóttir", "María Birna Karlsdóttir", "Patrekur Sóleyjarson", "Pétur Vilhjálmsson"),
+  nafn_nemenda = c("Grettir Ásmundsson",
+                   "Helena Birgisdóttir",
+                   "María Birna Karlsdóttir",
+                   "Patrekur Sóleyjarson",
+                   "Pétur Vilhjálmsson",
+                   "Agnes Kristjánsdóttir",
+                   "Maríanna Hekla Tómasdóttir"),
   prof = "les07",
   dagsetnings_profs = "2025-03-17",
-  maelitala = c(2, 17, 5, 18, 9),
-  sfmt = c(0.8, 1.2, 1, 0.9, 1.1)
+  maelitala = c(2, 7, 5, 8, 9, 3, 11),
+  sfmt = c(0.8, 1.2, 1, 0.9, 1.1, 0.8, 1.3)
   # profhluti = c(
   #   "Heildartala",
   #   "Leita og finna upplýsingar",
@@ -64,7 +70,7 @@ set.seed(42)  # for reproducibility
 # Define sample values
 nafn <- c("Grettir Ásmundsson", "Helena Birgisdóttir", "María Birna Karlsdóttir", "Patrekur Sóleyjarson", "Pétur Vilhjálmsson")
 kennitala <- c("310200-3257", "250201-4489", "180300-8765", "041199-1123", "120200-5567")
-item_ids <- paste0("Spurning_", 1:10)
+item_ids <- paste0("Atriði", 1:10)
 difficulty_levels <- c("Mjög létt", "Létt", "Þungt", "Mjög þungt")
 
 # Create the dummy dataframe
