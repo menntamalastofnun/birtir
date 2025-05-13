@@ -4,8 +4,6 @@ library(ggplot2)
 library(readxl)
 
 
-
-df_atridi <- read_xlsx("data/items_skp19isl07aa.xlsx")
 #' Mynd af stadsetningu nemanda a kvarda asamt lysingu
 #'
 #' @param data einkunnir nemanda
@@ -157,12 +155,122 @@ lysa_stodu_bekkjar <- function(data, kvardi) {
       ),
       plot.margin = unit(c(1, 1, 2, 1), "cm")
     ) +
-    coord_equal(ratio = 1 / 20)
+    coord_equal(ratio = 1 / 10) # Breytti úr 1/20 til að hækka grafið
 }
 
 lysa_stodu_bekkjar(df_bekkur, kvardi)
 
 #############################################################################
+
+# library(dplyr)
+# library(ggplot2)
+#
+# plot_maelitala_donut <- function(df) {
+#   # Categorize maelitala
+#   df_summary <- df %>%
+#     mutate(category = case_when(
+#       maelitala < 3 ~ "Þarf inngrip",
+#       maelitala >= 3 & maelitala <= 7 ~ "Þarf líklega inngrip",
+#       maelitala >= 8 & maelitala <= 12 ~ "Í meðallagi",
+#       maelitala > 12 ~ "Þarfnast flóknara efnis"
+#     )) %>%
+#     count(category) %>%
+#     mutate(
+#       percent = n / sum(n),
+#       label = paste0(category, "\n", scales::percent(percent, accuracy = 1))
+#     )
+#
+#   # Make donut plot
+#   ggplot(df_summary, aes(x = 2, y = percent, fill = category)) +
+#     geom_col(width = 1, color = "white") +
+#     coord_polar(theta = "y") +
+#     geom_text(aes(label = label), position = position_stack(vjust = 0.5), color = "black", size = 4.5) +
+#     scale_fill_manual(values = c("Þarf inngrip" = "#D8C1FF", "Þarf líklega inngrip" = "#E2D1FF", "Í meðallagi" = "#EBE0FF", "Þarfnast flóknara efnis" = "#F5EFFF")) +
+#     xlim(1, 2.5) +  # creates the hole
+#     theme_void() +
+#     theme(
+#       legend.position = "none",
+#       plot.title = element_text(hjust = 0.5, face = "bold", color = "#292A4B")
+#     ) +
+#     labs(title = "Dreifing nemenda eftir mælitölu")
+# }
+#
+
+
+library(dplyr)
+library(ggplot2)
+library(scales)
+
+plot_donut_subset <- function(df, label_name, filter_expr) {
+  # Create logical column based on filter expression
+  df_summary <- df %>%
+    mutate(in_group = !!rlang::enquo(filter_expr)) %>%
+    count(in_group) %>%
+    mutate(
+      percent = n / sum(n),
+      label = ifelse(in_group, paste0( percent(percent, accuracy = 1), "\n", label_name), paste0("Aðrir\n", percent(percent, accuracy = 1)))
+    )
+
+  # Dynamically create color mapping
+  color_mapping <- setNames(
+    c("#D8C1FF", "#F5EFFF"),
+    df_summary$label[order(df_summary$in_group, decreasing = TRUE)]
+  )
+
+  # Create donut plot
+  ggplot(df_summary, aes(x = 2, y = percent, fill = label)) +
+    geom_col(width = 1, color = "white") +
+    coord_polar(theta = "y") +
+    geom_text(aes(label = label), position = position_stack(vjust = 0.5), color = "black", size = 4.5) +
+    xlim(1, 2.5) +
+    scale_fill_manual(values = color_mapping) +
+    theme_void() +
+    labs(title = paste0("Hlutfall: ", label_name)) +
+    theme(
+      plot.title = element_text(hjust = 0.5, face = "bold", color = "#292A4B"),
+      legend.position = "none"
+    )
+}
+
+
+plot_donut_subset <- function(df, label_name, filter_expr) {
+  df_summary <- df %>%
+    mutate(in_group = !!rlang::enquo(filter_expr)) %>%
+    count(in_group) %>%
+    mutate(percent = n / sum(n))
+
+  # Build the central label (just for the in_group = TRUE case)
+  central_label <- df_summary %>%
+    filter(in_group) %>%
+    mutate(label = paste0(percent(percent, accuracy = 1), "\n", label_name)) %>%
+    pull(label)
+
+  # Define colors
+  color_mapping <- setNames(
+    c("#D8C1FF", "#F5EFFF"),
+    df_summary$in_group[order(df_summary$in_group, decreasing = TRUE)]
+  )
+
+  # Convert logical to character for fill
+  df_summary$fill_label <- factor(df_summary$in_group, labels = c("Aðrir", label_name))
+
+  ggplot(df_summary, aes(x = 2, y = percent, fill = fill_label)) +
+    geom_col(width = 1, color = "white") +
+    coord_polar(theta = "y") +
+    # Center label manually added
+    annotate("text", x = 0.2, y = 0, label = central_label, size = 6, fontface = "bold", color = "#292A4B", lineheight = 1.1) +
+    xlim(0.1, 2.5) +
+    scale_fill_manual(values = setNames(c("#D8C1FF", "#F5EFFF"), c(label_name, "Aðrir"))) +
+    theme_void() +
+    labs(title = NULL) +
+    theme(
+      legend.position = "none"
+    )
+}
+
+
+
+
 
 #'
 #' #' Mynd af profil nemandans
