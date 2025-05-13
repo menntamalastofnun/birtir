@@ -300,7 +300,7 @@ einstaklingar_atridi <- function(df_items) {
       stroke = 1
     ) +
     scale_fill_manual(
-      values = c("TRUE" = "#292A4B", "FALSE" = "white"),
+      values = c("TRUE" = "#D8C1FF", "FALSE" = "white"),
       labels = c("TRUE" = "Rétt", "FALSE" = "Rangt"), # Label the legend
       name = ""
       #guide = FALSE
@@ -327,7 +327,8 @@ einstaklingar_atridi <- function(df_items) {
       # legend.position = "top",
       # legend.direction = "horizontal",
       # legend.box = "vertical",
-      panel.grid = element_line(color = NULL, linetype = 3),
+      #panel.grid = element_line(color = NULL, linetype = 3),
+      panel.grid.major.y = element_line(color = "#D8C1FF", linetype = "dotted", linewidth = 0.5),
       panel.grid.major = element_line(colour = "#292A4B"),
       panel.grid.major.x = element_blank(),
       #panel.grid.major.y = element_blank(),
