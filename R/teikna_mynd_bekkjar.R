@@ -158,7 +158,7 @@ lysa_stodu_bekkjar <- function(data, kvardi) {
     coord_equal(ratio = 1 / 10) # Breytti úr 1/20 til að hækka grafið
 }
 
-lysa_stodu_bekkjar(df_bekkur, kvardi)
+#lysa_stodu_bekkjar(df_bekkur, kvardi)
 
 #############################################################################
 
