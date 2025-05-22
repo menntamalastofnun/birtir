@@ -2,6 +2,7 @@
 #'
 #' @param data einkunnir nemanda
 #' @param kvardi tegund kvarda sem er notadur
+#' @param fag "les" eða "stf" - ræður fjölda bakgrunsslita
 #' @importFrom dplyr filter
 #' @importFrom stringr str_wrap
 #' @import ggplot2
@@ -10,106 +11,115 @@
 #'
 #' @examples lysa_stodu(fa_heildartolu(5), fa_kvarda())
 #'
-lysa_stodu <- function(data, kvardi) {
+lysa_stodu <- function(data, kvardi, fag) {
   heildartala <- data |>
     dplyr::filter(grepl("Heildartala", profhluti))
 
-  kvardi_bil <- kvardi$kvardi_bil # kvardi bil nær frá 0 til 20
+  kvardi_bil <- kvardi$kvardi_bil
   kvardi_lysing <- kvardi$kvardi_lysing
-  kvardi_texta_bil <- c(2, 5, 9.5, 15.5)
-
-  if (nrow(heildartala) != 1) {
-    stop(
-      "Gagnasettid inniheldur ekki profhlutan heildartolu.
-      Athugid hvort nafnid se ekki rett skrifad Heildartala."
-    )
+  # Ákveður staðsetningu texta eftir því hvort við erum með fjögur bil (les) eða þrjú (stf)
+  kvardi_texta_bil <- if (fag == "les") {
+    c(2, 5, 10, 15.5)
+  } else if (fag == "stf") {
+    c(3.5, 9.5, 16)
+  } else {
+    stop("Óþekkt gildi í 'fag'. Notaðu 'les' eða 'stf'.")
   }
 
+  if (nrow(heildartala) != 1) {
+    stop("Gagnasettid inniheldur ekki profhlutan heildartolu.")
+  }
 
-  fjardlaegd_punkts_fra_texta <- .5
-
+  fjardlaegd_punkts_fra_texta <- 0.45
 
   heildartala |>
-    ggplot(aes(.1, einkunn)) +
+    ggplot(aes(.15, einkunn)) +
     litud_maelistika(
-      y_range = c(kvardi_bil[1]+1, kvardi_bil[2]-1),
+      y_range = c(kvardi_bil[1] + 1, kvardi_bil[2] - 1),
       cutoffs = kvardi_lysing$einkunn,
       alpha = 1,
-      litur = "#D8C1FF" # Breytti litnum úr #C7FBD2
+      litur = "#D8C1FF",
+      fag = fag
     ) +
     geom_errorbar(
-      aes(
-        ymin = einkunn - sf,
-        ymax = einkunn + sf
-      ),
+      aes(ymin = einkunn - sf, ymax = einkunn + sf),
       width = 0.05,
       color = "#292A4B",
       linewidth = 0.6
     ) +
     geom_point(
-      size = 3, # var 10
+      size = 4,
       shape = 21,
       stroke = 1,
-      color = "#292A4B", # Breytt úr "black"
-      fill = "#292A4B", # Breytt úr "black"
-      show.legend = F
+      color = "#292A4B",
+      fill = "#292A4B",
+      show.legend = FALSE
     ) +
     geom_text(
       data = kvardi_lysing,
       aes(
         x = fjardlaegd_punkts_fra_texta,
-        y = kvardi_texta_bil,  # use the adjusted y-coordinate
-        label = stringr::str_wrap(umsogn, width = 40)
+        y = kvardi_texta_bil,
+        label = stringr::str_wrap(umsogn, width = 70)
       ),
       hjust = 0,
-      vjust = 0.5,  # center vertically
+      vjust = 0.5,
       color = "#292A4B",
-      size = 3.5
+      size = 4,
+      inherit.aes = FALSE
     ) +
-
-    # Teiknar lýsingartextann fyrir hvert bilc
-    scale_x_continuous(limits = c(0, 1.5)) + # breytti limits úr c(0, 1)
+    geom_segment(
+      aes(x = 0.05, xend = 0.25, y = 10, yend = 10),
+      linetype = "dotted",
+      color = scales::alpha("#292A4B", 1),
+      linewidth = 1,
+      inherit.aes = FALSE
+    ) +
+    # Draw the "Nemandi" point in legend
+    scale_x_continuous(limits = c(0, 2)) +
     scale_y_continuous(
-      limits = kvardi_bil,
-      breaks = seq(from  = kvardi_bil[1]+1, to = kvardi_bil[2]-1, by = 1),
+      #limits = kvardi_bil,
+      limits = c(0, 20),
+      breaks = seq(from = kvardi_bil[1] + 1, to = kvardi_bil[2] - 1, by = 1),
       name = "Mælitala"
     ) +
+
+    guides(
+      shape = guide_legend(order = 1, override.aes = list(fill = "#292A4B")),
+      fill = "none",  # Hide original ribbon fill legend
+      linetype = guide_legend(order = 2),
+      color = "none"
+    ) +
     theme(
-      line = element_line(linetype = 1, colour = "#292A4B"), # Breytti litnum úr "black"
+      line = element_line(linetype = 1, colour = "#292A4B"),
       axis.text = element_text(face = "bold", size = rel(1)),
-      text = element_text(colour = "#292A4B"), # Breytti litnum úr "black"
-      rect = element_rect(
-        fill = NULL,
-        linetype = 0,
-        colour = NA
-      ),
+      text = element_text(colour = "#292A4B"),
+      rect = element_rect(fill = NULL, linetype = 0, colour = NA),
       legend.background = element_rect(fill = NULL),
-      # legend.position = "top",
-      # legend.direction = "horizontal",
-      # legend.box = "vertical",
       panel.grid = element_line(color = NULL, linetype = 3),
       panel.grid.major = element_line(colour = "#292A4B"),
       panel.grid.major.x = element_blank(),
       panel.grid.major.y = element_blank(),
       panel.grid.minor = element_blank(),
       panel.background = element_blank(),
-      # Removes the grey background
       plot.background = element_blank(),
       plot.title = element_text(hjust = 0, face = "bold"),
       strip.background = element_rect(),
       axis.ticks.y = element_blank(),
       axis.title.x = element_blank(),
-      #axis.title.y = element_blank(),
+      axis.title.y = element_text(face = "bold", size = rel(1), margin = margin(r = 10)),
       axis.text.x = element_blank(),
+      axis.text.y = element_text(face = "bold", size = rel(1), margin = margin(r = 10)),
       axis.ticks.x = element_blank(),
       axis.line.x = element_blank(),
-      axis.line.y = element_line(
-        linewidth = 1#, # Breytti úr 1.5
-        #arrow = grid::arrow(length = unit(0.3, "cm"), ends = "both")
-      ),
-      plot.margin = unit(c(1, 1, 2, 1), "cm")
-    ) +
-    coord_equal(ratio = 1 / 20)
+      axis.line.y = element_line(linewidth = 1),
+      plot.margin = unit(c(0.2, 0.5, 0.5, 0.5), "cm"),
+      legend.position = "bottom",
+      legend.text = element_text(size = 10),
+      legend.key = element_blank(),
+      legend.box.margin = margin(t = 10)
+    )
+
 }
 
 

@@ -4,12 +4,14 @@
 \alias{lysa_stodu}
 \title{Mynd af stadsetningu nemanda a kvarda asamt lysingu}
 \usage{
-lysa_stodu(data, kvardi)
+lysa_stodu(data, kvardi, fag)
 }
 \arguments{
 \item{data}{einkunnir nemanda}
 
 \item{kvardi}{tegund kvarda sem er notadur}
+
+\item{fag}{"les" eða "stf" - ræður fjölda bakgrunsslita}
 }
 \value{
 skilar mynd af stadsettningu nemanda
