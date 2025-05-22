@@ -253,7 +253,7 @@ kortleggja <- function(data, kvardi) {
     ) +
     scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) +
     scale_y_continuous(
-      limits = kvardi_bil, #kvardi_bil[1]+1, kvardi_bil[2]-1),
+      limits = c(0, 20), #kvardi_bil[1]+1, kvardi_bil[2]-1),
       breaks = seq(from  = kvardi_bil[1]+1, to = kvardi_bil[2]-1, by = 1),
       name = "Mælitala"
     ) +
