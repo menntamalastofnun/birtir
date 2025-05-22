@@ -4,7 +4,7 @@
 \alias{litud_maelistika}
 \title{Byr til litada maelistiku}
 \usage{
-litud_maelistika(y_range, cutoffs, litur = "#C6D8CD", alpha = 0.8)
+litud_maelistika(y_range, cutoffs, litur = "#D8C1FF", alpha = 1)
 }
 \arguments{
 \item{y_range}{haesta og laegsta gildi a kvardanum}
