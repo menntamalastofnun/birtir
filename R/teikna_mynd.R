@@ -181,7 +181,7 @@ lysa_stodu_legend <- function() {
     coord_cartesian(ylim = c(0.8, 1.4)) +
     theme_void() +
     theme(
-      plot.margin = margin(t = 1, r = 10, b = 1, l = 10)
+      plot.margin = margin(t = 0, r = 10, b = 0, l = 10)
     )
 }
 
@@ -485,9 +485,9 @@ atridagreining_einstaklinga <- function(df) {
     theme_minimal() +
     theme(
       axis.title = element_blank(),
-      axis.text.y = element_text(size = 11, hjust = 0),
-      axis.text.x = element_text(size = 11),
-      legend.text = element_text(size = 11),
+      axis.text.y = element_text(size = 12, hjust = 0),
+      axis.text.x = element_text(size = 12),
+      legend.text = element_text(size = 12),
       legend.position = "bottom",
       legend.title = element_blank()
     ) +
