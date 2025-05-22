@@ -19,7 +19,7 @@ lysa_stodu <- function(data, kvardi, fag) {
   kvardi_lysing <- kvardi$kvardi_lysing
   # Ákveður staðsetningu texta eftir því hvort við erum með fjögur bil (les) eða þrjú (stf)
   kvardi_texta_bil <- if (fag == "les") {
-    c(2, 5, 10, 15.5)
+    c(1.5, 5, 10, 16)
   } else if (fag == "stf") {
     c(3.5, 9.5, 16)
   } else {
@@ -35,7 +35,7 @@ lysa_stodu <- function(data, kvardi, fag) {
   heildartala |>
     ggplot(aes(.15, einkunn)) +
     litud_maelistika(
-      y_range = c(kvardi_bil[1] + 1, kvardi_bil[2] - 1),
+      y_range = c(kvardi_bil[1], kvardi_bil[2]),
       cutoffs = kvardi_lysing$einkunn,
       alpha = 1,
       litur = "#D8C1FF",
