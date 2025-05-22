@@ -252,7 +252,6 @@ teikna_mynd <- function(data, kvardi) {
 }
 
 
-#######################################################
 
 #' Mynd af atriðum nemanda - rétt/röng svör per atriði
 #'
@@ -277,7 +276,6 @@ teikna_mynd <- function(data, kvardi) {
 #'
 #' df_student <- subset(df_student, nafn == "María Birna Karlsdóttir")
 #'
-
 einstaklingar_atridi <- function(df_items) {
 
   # Sort the data by difficulty and item_id
