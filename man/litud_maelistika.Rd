@@ -9,7 +9,6 @@ litud_maelistika(y_range, cutoffs, litur = "#D8C1FF", alpha = 1, fag = "les")
 \arguments{
 \item{y_range}{hæsta og lægsta gildi á kvarðanum}
 
-\item{cutoffs}{thar sem skilin a milli flokka er}
 \item{cutoffs}{þar sem skilin á milli flokka eru}
 
 \item{litur}{litur kvarðans}
