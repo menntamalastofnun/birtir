@@ -12,12 +12,12 @@ lysa_stodu_bekkjar(data, kvardi)
 \item{kvardi}{tegund kvarda sem er notadur}
 }
 \value{
-skilar mynd af stadsettningu nemanda
+skilar mynd af stadsetningu bekkjar midad vid landsmedaltal a ollu profinu og undirthattum
 }
 \description{
 Mynd af stadsetningu nemanda a kvarda asamt lysingu
 }
 \examples{
-lysa_stodu(fa_heildartolu(5), fa_kvarda())
+lysa_stodu_bekkjur(df, kvardi)
 
 }
