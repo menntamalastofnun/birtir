@@ -548,7 +548,7 @@ skifurit <- function(df, leidbeiningar, filter_expr) {
     labs(title = NULL) +
     theme(
       legend.position = "none",
-      plot.margin = margin(0.5, 0.5, 0.5, 0.5),
+      #plot.margin = margin(0.5, 0.5, 0.5, 0.5),
       clip = "off"
     )
 }
