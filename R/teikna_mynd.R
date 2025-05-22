@@ -113,7 +113,7 @@ lysa_stodu <- function(data, kvardi, fag) {
       axis.ticks.x = element_blank(),
       axis.line.x = element_blank(),
       axis.line.y = element_line(linewidth = 1),
-      plot.margin = unit(c(0.2, 0.5, 0.5, 0.5), "cm"),
+      plot.margin = unit(c(0.2, 0.5, 0, 0.5), "cm"),
       legend.position = "bottom",
       legend.text = element_text(size = 10),
       legend.key = element_blank(),
