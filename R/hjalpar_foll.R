@@ -121,17 +121,22 @@ litud_maelistika <- function(y_range,
 }
 
 
-#' Býr til töflu með einkunnum hvers nemanda
+
+#' Fall sem hjálpar að raða atriðunum í atridagreining_einstaklinga() fallinu
 #'
-#' @param df_bekkur Gagnarammi með upplýsingum um nemendur og mælitölur
-#' @returns Gögn í töfluformi með nafni og einkunn
+#' @param n Fjöldi gagnapunkta í hverri línu
+#' @returns Lárétta uppröðun á gagnapunktum í atridagreining_einstaklinga()
 #' @export
 #'
-#' @examples
-#' búa_toflu(df_bekkur)
-uppsetning_toflu <- function(df_bekkur, kvardi) {
-  df_bekkur |>
-    dplyr::select(nafn_nemenda, maelitala) |>
-    dplyr::rename(Mælitala = maelitala, Nafn = nafn_nemenda)
+#' @examples make_jitter(unique(n))[point_index]
+make_jitter <- function(n) {
+  if (n == 1) {
+    return(0)
+  } else if (n %% 2 == 1) {
+    half <- (n - 1) / 2
+    return(seq(-half, half, by = 1) * 0.15)
+  } else {
+    half <- n / 2
+    return(seq(-half + 0.5, half - 0.5, by = 1) * 0.15)
+  }
 }
-
