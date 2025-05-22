@@ -42,7 +42,7 @@ lysa_stodu_bekkjar <- function(data, kvardi) {
       shape = 21,
       color = "#292A4B",
       fill = "#292A4B",
-      alpha = 0.3,
+      alpha = 0.15,
       size = 3
     ) +
     # Mean point per profhluti
