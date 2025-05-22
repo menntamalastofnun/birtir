@@ -495,7 +495,7 @@ atridagreining_einstaklinga <- function(df) {
       axis.text.y = element_text(size = 12, hjust = 0),
       axis.text.x = element_text(size = 12),
       legend.text = element_text(size = 12),
-      legend.position = "bottom",
+      legend.position = "top",
       legend.title = element_blank()
     ) +
     labs(
