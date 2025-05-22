@@ -350,3 +350,79 @@ einstaklingar_atridi <- function(df_items) {
 
 
 
+#' Uppfærð mynd sem sýnir rétt/röng svör nemanda eftir atriðalýsingu og þyngd atriðis
+#'
+#' @param df einkunnir nemanda á atriðalevel
+#' @import dplyr
+#' @import stringr
+#' @import ggplot2
+#' @returns skilar mynd af svörum nemenda eftir atriði og þyngd atriða
+#' @export
+#'
+#' @examples atridagreining_einstaklinga(df)
+#'
+atridagreining_einstaklinga <- function(df) {
+  df <- df %>%
+    mutate(
+      item_statement_wrapped = stringr::str_wrap(item_statement, width = 45),
+      rett = factor(rett, levels = c(TRUE, FALSE)),
+      tyngd = factor(tyngd, levels = c("Létt", "Miðlungs", "Þungt")),
+      tyngd_num = as.numeric(tyngd)
+    ) %>%
+    group_by(tyngd, item_statement_wrapped) %>%
+    mutate(
+      n = n(),
+      point_index = row_number()
+    ) %>%
+    ungroup() %>%
+    group_by(tyngd, item_statement_wrapped) %>%
+    mutate(
+      x_jitter = make_jitter(unique(n))[point_index]
+    ) %>%
+    ungroup()
+
+  ggplot(df, aes(x = tyngd_num + x_jitter, y = item_statement_wrapped)) +
+    geom_point(
+      aes(fill = rett, color = rett),
+      shape = 21,
+      size = 5,
+      alpha = 0.9
+    ) +
+    # scale_x_continuous(
+    #   breaks = 1:3,
+    #   labels = c("Létt", "Miðlungs", "Þungt"),
+    #   expand = expansion(add = 0.3)
+    # ) +
+    scale_x_continuous(
+      breaks = 1:3,
+      labels = c("Létt", "Miðlungs", "Þungt"),
+      limits = c(0.7, 3.3),  # Pad slightly around 1–3 to leave space for jitter
+      expand = expansion(add = 0)
+    ) +
+    scale_fill_manual(
+      values = c("TRUE" = "#D8C1FF", "FALSE" = "white"),
+      labels = c("Rétt", "Rangt"),
+      guide = guide_legend(order = 1)
+    ) +
+    scale_color_manual(
+      values = c("TRUE" = "#292A4B", "FALSE" = "#292A4B"),
+      labels = c("Rétt", "Rangt"),
+      guide = guide_legend(order = 1)
+    ) +
+    theme_minimal() +
+    theme(
+      axis.title = element_blank(),
+      axis.text.y = element_text(size = 11, hjust = 0),
+      axis.text.x = element_text(size = 11),
+      legend.text = element_text(size = 11),
+      legend.position = "bottom",
+      legend.title = element_blank()
+    ) +
+    labs(
+      fill = NULL,
+      color = NULL
+    )
+}
+
+
+
