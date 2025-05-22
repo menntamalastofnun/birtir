@@ -4,19 +4,22 @@
 \alias{litud_maelistika}
 \title{Byr til litada maelistiku}
 \usage{
-litud_maelistika(y_range, cutoffs, litur = "#D8C1FF", alpha = 1)
+litud_maelistika(y_range, cutoffs, litur = "#D8C1FF", alpha = 1, fag = "les")
 }
 \arguments{
-\item{y_range}{haesta og laegsta gildi a kvardanum}
+\item{y_range}{hæsta og lægsta gildi á kvarðanum}
 
 \item{cutoffs}{thar sem skilin a milli flokka er}
+\item{cutoffs}{þar sem skilin á milli flokka eru}
 
-\item{litur}{a kvardanum}
+\item{litur}{litur kvarðans}
 
-\item{alpha}{gildi sem lysir gegnsaei litarins}
+\item{alpha}{gegnsæi lita}
+
+\item{fag}{fagið, "les" eða "stf" — ræður fjölda lita}
 }
 \value{
-litadri maelistiku fyrir ggplot
+litadri mælistiku fyrir ggplot
 }
 \description{
 Byr til litada maelistiku

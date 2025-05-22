@@ -79,20 +79,23 @@ utbua_litapalletu <- function(litur, fj_punkta) {
 }
 
 
+
 #' Byr til litada maelistiku
 #'
-#' @param y_range haesta og laegsta gildi a kvardanum
-#' @param cutoffs thar sem skilin a milli flokka er
-#' @param litur a kvardanum
-#' @param alpha gildi sem lysir gegnsaei litarins
+#' @param y_range hæsta og lægsta gildi á kvarðanum
+#' @param cutoffs þar sem skilin á milli flokka eru
+#' @param litur litur kvarðans
+#' @param alpha gegnsæi lita
+#' @param fag fagið, "les" eða "stf" — ræður fjölda lita
 #'
-#' @returns litadri maelistiku fyrir ggplot
+#' @returns litadri mælistiku fyrir ggplot
 #' @export
-
 litud_maelistika <- function(y_range,
                              cutoffs,
                              litur = "#D8C1FF",  # base purple
-                             alpha = 1) {
+                             alpha = 1,
+                             fag = "les") {
+
   # Ensure cutoffs are sorted and within range
   cutoffs <- sort(unique(cutoffs))
   cutoffs <- cutoffs[cutoffs > y_range[1] & cutoffs < y_range[2]]
@@ -100,21 +103,24 @@ litud_maelistika <- function(y_range,
   # Define segment boundaries
   segments <- c(y_range[1], cutoffs, y_range[2])
 
-  # Generate 5-color palette (light to dark)
-  base_colors <- colorRampPalette(c("white", litur))(5)
+  # Determine number of segments (based on length of cutoffs + 1)
+  n_segments <- length(segments) - 1
 
-  # Assign the darkest color to top two segments
-  colors <- c(base_colors[5], base_colors[4], base_colors[3], base_colors[2])
+  # Adjust number of colors depending on `fag`
+  n_colors <- if (fag == "les") 4 else if (fag == "stf") 3 else n_segments
+
+  # Generate palette without white
+  base_colors <- colorRampPalette(c(litur, "#F0E6FF"))(n_colors)
 
   # Create annotation rectangles
-  purrr::map(seq_along(colors), function(i) {
+  purrr::map(seq_len(n_segments), function(i) {
     annotate(
       "rect",
       ymin = segments[i],
       ymax = segments[i + 1],
       xmin = -Inf,
       xmax = Inf,
-      fill = colors[i],
+      fill = base_colors[i],
       alpha = alpha
     )
   })
