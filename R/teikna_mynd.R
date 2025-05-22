@@ -113,6 +113,69 @@ lysa_stodu <- function(data, kvardi) {
 }
 
 
+#' Mynd af legend fyrir lysa_stodu
+#'
+#' @importFrom dplyr filter
+#' @importFrom stringr str_wrap
+#' @importFrom tidyr crossing
+#' @import ggplot2
+#' @returns skilar mynd af legend fyrir lysa_stodu
+#' @export
+#'
+#' @examples lysa_stodu_legend()
+#'
+lysa_stodu_legend <- function() {
+  legend_df <- tibble::tibble(
+    group = c("Nemandi", "95% öryggisbil", "Landsmeðaltal"),
+    x = c(0.15, 0.6, 1.2),
+    y = c(1, 1, 1),
+    ymin = c(NA, 0.95, NA),
+    ymax = c(NA, 1.05, NA)
+  )
+
+  ggplot() +
+    # Dot (Nemandi)
+    geom_point(
+      data = dplyr::filter(legend_df, group == "Nemandi"),
+      aes(x = x, y = y),
+      size = 4,
+      shape = 21,
+      fill = "#292A4B",
+      color = "#292A4B"
+    ) +
+    # Error bar (CI)
+    geom_errorbar(
+      data = dplyr::filter(legend_df, group == "95% öryggisbil"),
+      aes(x = x, ymin = ymin, ymax = ymax),
+      color = "#292A4B",
+      width = 0.02,
+      linewidth = 0.6
+    ) +
+    # Dotted line (Landsmeðaltal)
+    geom_segment(
+      data = dplyr::filter(legend_df, group == "Landsmeðaltal"),
+      aes(x = x - 0.05, xend = x + 0.05, y = y, yend = y),
+      linetype = "dotted",
+      color = "#292A4B",
+      linewidth = 1
+    ) +
+    # Labels next to symbols
+    geom_text(
+      data = legend_df,
+      aes(x = x + 0.1, y = y, label = group),
+      hjust = 0,
+      size = 4,
+      color = "#292A4B"
+    ) +
+    scale_x_continuous(limits = c(0, 2)) +
+    coord_cartesian(ylim = c(0.8, 1.4)) +
+    theme_void() +
+    theme(
+      plot.margin = margin(t = 1, r = 10, b = 1, l = 10)
+    )
+}
+
+
 #' Mynd af profil nemandans
 #'
 #' @param data einkunnir nemanda
