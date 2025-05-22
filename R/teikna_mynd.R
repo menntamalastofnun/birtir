@@ -245,7 +245,13 @@ kortleggja <- function(data, kvardi) {
       fill = "#292A4B",
       show.legend = F
     ) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) +
+    geom_hline(
+      yintercept = 10,
+      linetype = "dotted",
+      color = "#292A4B",
+      linewidth = 1
+    ) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) +
     scale_y_continuous(
       limits = c(1, 19), #kvardi_bil[1]+1, kvardi_bil[2]-1),
       breaks = seq(from  = kvardi_bil[1]+1, to = kvardi_bil[2]-1, by = 1),
@@ -286,9 +292,10 @@ kortleggja <- function(data, kvardi) {
 
         #arrow = grid::arrow(length = unit(0.3, "cm"), ends = "both")
       ),
-      plot.margin = unit(c(1, 1, 2, 1), "cm")
-    ) +
-    coord_equal(ratio = 1 / 10)
+      #plot.margin = unit(c(1, 1, 2, 1), "cm")
+      plot.margin = unit(c(0.2, 0.5, 0.5, 0.5), "cm"),
+    ) #+
+  #coord_equal(ratio = 1 / 10)
 
 }
 
