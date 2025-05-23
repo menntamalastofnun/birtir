@@ -34,16 +34,26 @@ lysa_stodu_bekkjar <- function(data, kvardi) {
       litur = "#D8C1FF"
     ) +
     # Student-level points (jittered horizontally)
+    # geom_jitter(
+    #   data = data,
+    #   aes(x = profhluti, y = maelitala),
+    #   width = 0.1,
+    #   height = 0,
+    #   shape = 21,
+    #   color = "#292A4B",
+    #   fill = "#292A4B",
+    #   alpha = 0.15,
+    #   size = 3
+    # ) +
     geom_jitter(
       data = data,
       aes(x = profhluti, y = maelitala),
       width = 0.1,
       height = 0,
-      shape = 21,
+      shape = 16,             # Solid small dot (basic point shape)
       color = "#292A4B",
-      fill = "#292A4B",
-      alpha = 0.15,
-      size = 3
+      alpha = 0.8,            # Slight transparency (adjust as needed)
+      size = 1.5              # Smaller size (try 1–2)
     ) +
     # Mean point per profhluti
     geom_point(
