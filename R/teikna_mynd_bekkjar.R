@@ -107,6 +107,7 @@ lysa_stodu_bekkjar <- function(data, kvardi) {
       axis.title.x = element_blank(),
       # axis.title.y = element_blank(),
       #axis.text.x = element_blank(),
+      plot.margin = unit(c(0.2, 0.5, 0, 0.5), "cm"),
       axis.ticks.x = element_blank(),
       axis.line.x = element_blank(),
       axis.line.y = element_line(
