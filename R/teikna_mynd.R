@@ -219,7 +219,7 @@ kortleggja <- function(data, kvardi) {
   heildartala |>
     ggplot(aes(profhluti, einkunn)) +
     litud_maelistika(
-      y_range = c(kvardi_bil[1]+1, kvardi_bil[2]-1),
+      y_range = c(kvardi_bil[1], kvardi_bil[2]),
       cutoffs = kvardi_lysing$einkunn,
       alpha = 1,
       litur = "#D8C1FF"

@@ -45,16 +45,16 @@ lysa_stodu_bekkjar <- function(data, kvardi) {
     #   alpha = 0.15,
     #   size = 3
     # ) +
-    geom_jitter(
-      data = data,
-      aes(x = profhluti, y = maelitala),
-      width = 0.1,
-      height = 0,
-      shape = 16,             # Solid small dot (basic point shape)
-      color = "#292A4B",
-      alpha = 0.8,            # Slight transparency (adjust as needed)
-      size = 1.5              # Smaller size (try 1–2)
-    ) +
+    # geom_jitter(
+    #   data = data,
+    #   aes(x = profhluti, y = maelitala),
+    #   width = 0.1,
+    #   height = 0,
+    #   shape = 16,             # Solid small dot (basic point shape)
+    #   color = "#292A4B",
+    #   alpha = 0.8,            # Slight transparency (adjust as needed)
+    #   size = 1.5              # Smaller size (try 1–2)
+    # ) +
     # Mean point per profhluti
     geom_point(
       data = heildartolur,
