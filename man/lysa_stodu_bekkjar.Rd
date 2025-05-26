@@ -4,12 +4,14 @@
 \alias{lysa_stodu_bekkjar}
 \title{Mynd af stadsetningu nemanda a kvarda asamt lysingu}
 \usage{
-lysa_stodu_bekkjar(data, kvardi)
+lysa_stodu_bekkjar(data, kvardi, fag = "les")
 }
 \arguments{
 \item{data}{einkunnir nemanda}
 
 \item{kvardi}{tegund kvarda sem er notadur}
+
+\item{fag}{les eða stf, ákvarðar fjölda lita í litud_maelistika()}
 }
 \value{
 skilar mynd af stadsetningu bekkjar midad vid landsmedaltal a ollu profinu og undirthattum
