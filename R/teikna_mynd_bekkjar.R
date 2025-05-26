@@ -84,8 +84,11 @@ lysa_stodu_bekkjar <- function(data, kvardi) {
       color = "#292A4B",
       linewidth = 1
     ) +
-
-
+    geom_vline(
+      xintercept = 1.5,
+      color = "white",
+      linewidth = 2
+    ) +
     scale_y_continuous(
       limits = kvardi_bil,
       breaks = seq(kvardi_bil[1] + 1, kvardi_bil[2] - 1, by = 1),
