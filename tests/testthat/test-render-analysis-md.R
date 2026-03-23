@@ -1,0 +1,74 @@
+test_that("render_analysis_md captures output, directives, and helpers", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "example_report.R")
+
+  writeLines(
+    c(
+      "#| h1: Example report",
+      "#| text: Intro paragraph.",
+      "",
+      "x <- 1 + 1",
+      "x",
+      "",
+      "md_table(data.frame(term = 'x', value = x), caption = 'Values')"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(script_path, output_dir = script_dir)
+  md_lines <- readLines(output_path, warn = FALSE)
+
+  expect_true(any(grepl("^# Example report$", md_lines)))
+  expect_true(any(grepl("^Intro paragraph\\.$", md_lines)))
+  expect_true(any(grepl("^\\[Table: tbl-001\\.md\\]", md_lines)))
+  expect_true(any(grepl("^\\[1\\] 2$", md_lines)))
+  expect_true(file.exists(file.path(dirname(output_path), "tables", "tbl-001.md")))
+})
+
+test_that("render_analysis_md keeps code blocks intact across blank lines", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "multiline_expression.R")
+
+  writeLines(
+    c(
+      "result <- (",
+      "  1 +",
+      "",
+      "  2",
+      ")",
+      "result"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(script_path, output_dir = script_dir)
+  md_lines <- readLines(output_path, warn = FALSE)
+
+  expect_true(any(grepl("^\\[1\\] 3$", md_lines)))
+})
+
+test_that("render_analysis_md captures messages, warnings, and errors", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "conditions.R")
+
+  writeLines(
+    c(
+      "message('hello')",
+      "warning('careful')",
+      "stop('boom')"
+    ),
+    script_path
+  )
+
+  expect_error(
+    render_analysis_md(script_path, output_dir = script_dir),
+    "near line 3: boom"
+  )
+
+  md_path <- file.path(script_dir, "conditions", "conditions.md")
+  md_lines <- readLines(md_path, warn = FALSE)
+
+  expect_true(any(grepl("^Message: hello$", md_lines)))
+  expect_true(any(grepl("^Warning: careful$", md_lines)))
+  expect_true(any(grepl("^Error: boom$", md_lines)))
+})
