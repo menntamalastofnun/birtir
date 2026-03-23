@@ -2,7 +2,7 @@
 % Please edit documentation in R/teikna_mynd.R
 \name{teikna_mynd}
 \alias{teikna_mynd}
-\title{Prenta ut myndir}
+\title{Deprecated legacy wrapper that prints student plots}
 \usage{
 teikna_mynd(data, kvardi)
 }
@@ -15,10 +15,16 @@ teikna_mynd(data, kvardi)
 myndir fyrir nidurstodur
 }
 \description{
-Prenta ut myndir
+Deprecated legacy wrapper that prints student plots
+}
+\details{
+This function belongs to the legacy plotting workflow kept for reference
+during the transition to \code{render_analysis_md()}.
 }
 \examples{
+\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
 data <- fa_heildartolu()
 kvardi <- fa_kvarda()
 teikna_mynd(data,kvardi)
+\dontshow{\}) # examplesIf}
 }

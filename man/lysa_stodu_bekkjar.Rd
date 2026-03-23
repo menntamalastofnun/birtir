@@ -2,7 +2,7 @@
 % Please edit documentation in R/teikna_mynd_bekkjar.R
 \name{lysa_stodu_bekkjar}
 \alias{lysa_stodu_bekkjar}
-\title{Mynd af stadsetningu nemanda a kvarda asamt lysingu}
+\title{Deprecated legacy plot for class-level score position}
 \usage{
 lysa_stodu_bekkjar(data, kvardi, fag = "les")
 }
@@ -11,15 +11,20 @@ lysa_stodu_bekkjar(data, kvardi, fag = "les")
 
 \item{kvardi}{tegund kvarda sem er notadur}
 
-\item{fag}{les eða stf, ákvarðar fjölda lita í litud_maelistika()}
+\item{fag}{les eda stf, akvardar fjolda lita i litud_maelistika()}
 }
 \value{
 skilar mynd af stadsetningu bekkjar midad vid landsmedaltal a ollu profinu og undirthattum
 }
 \description{
-Mynd af stadsetningu nemanda a kvarda asamt lysingu
+Deprecated legacy plot for class-level score position
+}
+\details{
+This function belongs to the legacy plotting workflow kept for reference
+during the transition to \code{render_analysis_md()}.
 }
 \examples{
-lysa_stodu_bekkjur(df, kvardi)
-
+\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
+lysa_stodu_bekkjar(df, kvardi)
+\dontshow{\}) # examplesIf}
 }

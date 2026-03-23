@@ -42,3 +42,23 @@ add_md_text_block <- function(state, x) {
 
   invisible(NULL)
 }
+
+#' Signal that a function belongs to the legacy workflow
+#'
+#' @param name Function name without parentheses.
+#'
+#' @return Invisibly returns NULL.
+#' @keywords internal
+warn_legacy <- function(name) {
+  lifecycle::deprecate_warn(
+    when = "0.0.3",
+    what = paste0(name, "()"),
+    details = paste(
+      "This function belongs to the legacy plotting workflow.",
+      "It is kept temporarily while `birtir` moves to `render_analysis_md()`."
+    ),
+    always = FALSE
+  )
+
+  invisible(NULL)
+}

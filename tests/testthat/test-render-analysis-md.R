@@ -25,6 +25,28 @@ test_that("render_analysis_md captures output, directives, and helpers", {
   expect_true(file.exists(file.path(dirname(output_path), "tables", "tbl-001.md")))
 })
 
+test_that("md_table prints a markdown preview outside render mode", {
+  output <- capture.output(
+    result <- md_table(
+      data.frame(term = "x", value = 2),
+      caption = "Values"
+    )
+  )
+
+  expect_true(any(grepl("^\\*\\*Values\\*\\*$", output)))
+  expect_true(any(grepl("^\\|term\\s*\\|", output)))
+  expect_true(is.character(result))
+})
+
+test_that("md_plot returns the plot object outside render mode", {
+  plot <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
+    ggplot2::geom_point()
+
+  result <- md_plot(plot)
+
+  expect_s3_class(result, "ggplot")
+})
+
 test_that("render_analysis_md keeps code blocks intact across blank lines", {
   script_dir <- withr::local_tempdir()
   script_path <- file.path(script_dir, "multiline_expression.R")
@@ -71,4 +93,11 @@ test_that("render_analysis_md captures messages, warnings, and errors", {
   expect_true(any(grepl("^Message: hello$", md_lines)))
   expect_true(any(grepl("^Warning: careful$", md_lines)))
   expect_true(any(grepl("^Error: boom$", md_lines)))
+})
+
+test_that("legacy helpers emit deprecation warnings", {
+  expect_warning(
+    fa_heildartolu(),
+    "deprecated"
+  )
 })

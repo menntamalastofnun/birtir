@@ -2,7 +2,7 @@
 % Please edit documentation in R/hjalpar_foll.R
 \name{utbua_litapalletu}
 \alias{utbua_litapalletu}
-\title{Litapalleta}
+\title{Deprecated legacy helper for plot color palettes}
 \usage{
 utbua_litapalletu(litur, fj_punkta)
 }
@@ -15,8 +15,14 @@ utbua_litapalletu(litur, fj_punkta)
 skilar kvarda med N litum
 }
 \description{
-Litapalleta
+Deprecated legacy helper for plot color palettes
+}
+\details{
+This function belongs to the legacy plotting workflow kept for reference
+during the transition to \code{render_analysis_md()}.
 }
 \examples{
+\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
 utbua_litapalletu("#C6D8CD", 4)
+\dontshow{\}) # examplesIf}
 }

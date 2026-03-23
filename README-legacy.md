@@ -10,6 +10,7 @@ transition.
 Current intent:
 
 - `render_analysis_md()` is the primary workflow.
+- `md_table()` and `md_plot()` are the shared public helpers for scripts.
 - Older exported plotting helpers are considered legacy.
 - Legacy functions remain callable, but they now emit deprecation warnings.
 - New work should build on the Markdown renderer rather than extend the old

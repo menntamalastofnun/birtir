@@ -51,11 +51,15 @@ render_analysis_md <- function(script,
 
   envir <- new.env(parent = parent.env(globalenv()))
   envir$.birtir_state <- state
-
-  helpers <- birtir_render_helpers(state)
-  for (name in names(helpers)) {
-    assign(name, helpers[[name]], envir = envir)
+  envir$md_table <- md_table
+  envir$md_plot <- md_plot
+  envir$text_md <- function(text) {
+    add_md_line(state, text)
+    invisible(NULL)
   }
+
+  birtir_set_render_state(state)
+  on.exit(birtir_clear_render_state(), add = TRUE)
 
   blocks <- parse_analysis_blocks(script_lines)
 
@@ -88,6 +92,117 @@ render_analysis_md <- function(script,
 
   writeLines(state$md, md_path)
   invisible(md_path)
+}
+
+birtir_runtime <- new.env(parent = emptyenv())
+
+birtir_set_render_state <- function(state) {
+  assign("state", state, envir = birtir_runtime)
+  invisible(NULL)
+}
+
+birtir_get_render_state <- function() {
+  if (!exists("state", envir = birtir_runtime, inherits = FALSE)) {
+    return(NULL)
+  }
+
+  get("state", envir = birtir_runtime, inherits = FALSE)
+}
+
+birtir_clear_render_state <- function() {
+  if (exists("state", envir = birtir_runtime, inherits = FALSE)) {
+    rm("state", envir = birtir_runtime)
+  }
+
+  invisible(NULL)
+}
+
+#' Format a table for Markdown reports
+#'
+#' When called inside [render_analysis_md()], the table is written into the
+#' active report and saved under the report's `tables/` directory.
+#'
+#' When called outside a render context, the table is printed as a pipe-style
+#' Markdown preview in the console.
+#'
+#' @param x A data frame or table-like object.
+#' @param caption Optional caption text.
+#' @param filename Optional file stem used during rendering.
+#' @param digits Optional number of digits for numeric columns.
+#'
+#' @return Invisibly returns the saved table path during rendering, or the
+#'   Markdown table text outside rendering.
+#' @export
+md_table <- function(x, caption = NULL, filename = NULL, digits = NULL) {
+  out <- x
+
+  if (!is.null(digits) && is.data.frame(out)) {
+    out <- dplyr::mutate(
+      out,
+      dplyr::across(where(is.numeric), ~ round(.x, digits))
+    )
+  }
+
+  table_md <- knitr::kable(out, format = "pipe")
+  state <- birtir_get_render_state()
+
+  if (is.null(state)) {
+    preview <- character()
+
+    if (!is.null(caption)) {
+      preview <- c(preview, paste0("**", caption, "**"), "")
+    }
+
+    preview <- c(preview, table_md)
+    cat(paste(preview, collapse = "\n"), "\n", sep = "")
+
+    return(invisible(table_md))
+  }
+
+  invisible(write_md_table(
+    state = state,
+    table_md = table_md,
+    caption = caption,
+    filename = filename
+  ))
+}
+
+#' Format a plot for Markdown reports
+#'
+#' When called inside [render_analysis_md()], the plot is saved and embedded in
+#' the active report.
+#'
+#' When called outside a render context, the plot is printed normally for
+#' interactive use.
+#'
+#' @param plot A ggplot object.
+#' @param caption Optional caption text.
+#' @param filename Optional file stem used during rendering.
+#' @param width Plot width in inches.
+#' @param height Plot height in inches.
+#' @param dpi Plot resolution.
+#'
+#' @return Invisibly returns the saved plot path during rendering, or the plot
+#'   object outside rendering.
+#' @export
+md_plot <- function(plot, caption = NULL, filename = NULL,
+                    width = 7, height = 5, dpi = 300) {
+  state <- birtir_get_render_state()
+
+  if (is.null(state)) {
+    print(plot)
+    return(invisible(plot))
+  }
+
+  invisible(write_md_plot(
+    state = state,
+    plot = plot,
+    caption = caption,
+    filename = filename,
+    width = width,
+    height = height,
+    dpi = dpi
+  ))
 }
 
 parse_analysis_blocks <- function(lines) {
@@ -155,85 +270,60 @@ emit_directive <- function(state, directive, text) {
   invisible(NULL)
 }
 
-birtir_render_helpers <- function(state) {
-  list(
-    h1 = function(text) {
-      add_md_line(state, paste0("# ", text))
-      invisible(NULL)
-    },
-    h2 = function(text) {
-      add_md_line(state, paste0("## ", text))
-      invisible(NULL)
-    },
-    text_md = function(text) {
-      add_md_line(state, text)
-      invisible(NULL)
-    },
-    md_table = function(x, caption = NULL, filename = NULL, digits = NULL) {
-      state$table_index <- state$table_index + 1L
+write_md_table <- function(state, table_md, caption = NULL, filename = NULL) {
+  state$table_index <- state$table_index + 1L
 
-      if (is.null(filename)) {
-        filename <- sprintf("tbl-%03d.md", state$table_index)
-      } else {
-        filename <- paste0(sanitize_name(filename), ".md")
-      }
+  if (is.null(filename)) {
+    filename <- sprintf("tbl-%03d.md", state$table_index)
+  } else {
+    filename <- paste0(sanitize_name(filename), ".md")
+  }
 
-      table_path <- fs::path(state$tables_dir, filename)
-      out <- x
+  table_path <- fs::path(state$tables_dir, filename)
+  writeLines(table_md, table_path)
 
-      if (!is.null(digits) && is.data.frame(out)) {
-        out <- dplyr::mutate(
-          out,
-          dplyr::across(where(is.numeric), ~ round(.x, digits))
-        )
-      }
+  if (!is.null(caption)) {
+    add_md_line(state, paste0("**", caption, "**"))
+  }
 
-      table_md <- knitr::kable(out, format = "pipe")
-      writeLines(table_md, table_path)
+  rel_path <- fs::path_rel(table_path, start = state$report_dir)
+  add_md_line(state, paste0("[Table: ", filename, "](", rel_path, ")"))
+  add_md_line(state, "")
+  add_md_line(state, table_md)
+  add_md_line(state, "")
 
-      if (!is.null(caption)) {
-        add_md_line(state, paste0("**", caption, "**"))
-      }
+  invisible(table_path)
+}
 
-      rel_path <- fs::path_rel(table_path, start = state$report_dir)
-      add_md_line(state, paste0("[Table: ", filename, "](", rel_path, ")"))
-      add_md_line(state, "")
-      add_md_line(state, table_md)
-      add_md_line(state, "")
+write_md_plot <- function(state, plot, caption = NULL, filename = NULL,
+                          width = 7, height = 5, dpi = 300) {
+  state$plot_index <- state$plot_index + 1L
 
-      invisible(table_path)
-    },
-    md_plot = function(plot, caption = NULL, filename = NULL,
-                       width = 7, height = 5, dpi = 300) {
-      state$plot_index <- state$plot_index + 1L
+  if (is.null(filename)) {
+    filename <- sprintf("fig-%03d.png", state$plot_index)
+  } else {
+    filename <- paste0(sanitize_name(filename), ".png")
+  }
 
-      if (is.null(filename)) {
-        filename <- sprintf("fig-%03d.png", state$plot_index)
-      } else {
-        filename <- paste0(sanitize_name(filename), ".png")
-      }
+  plot_path <- fs::path(state$images_dir, filename)
 
-      plot_path <- fs::path(state$images_dir, filename)
-
-      ggplot2::ggsave(
-        filename = plot_path,
-        plot = plot,
-        width = width,
-        height = height,
-        dpi = dpi
-      )
-
-      if (!is.null(caption)) {
-        add_md_line(state, paste0("**Figure ", state$plot_index, ". ", caption, "**"))
-      }
-
-      rel_path <- fs::path_rel(plot_path, start = state$report_dir)
-      add_md_line(state, paste0("![](", rel_path, ")"))
-      add_md_line(state, "")
-
-      invisible(plot_path)
-    }
+  ggplot2::ggsave(
+    filename = plot_path,
+    plot = plot,
+    width = width,
+    height = height,
+    dpi = dpi
   )
+
+  if (!is.null(caption)) {
+    add_md_line(state, paste0("**Figure ", state$plot_index, ". ", caption, "**"))
+  }
+
+  rel_path <- fs::path_rel(plot_path, start = state$report_dir)
+  add_md_line(state, paste0("![](", rel_path, ")"))
+  add_md_line(state, "")
+
+  invisible(plot_path)
 }
 
 evaluate_analysis_block <- function(lines, envir, script) {

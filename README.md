@@ -9,9 +9,9 @@
 
 Render R analysis scripts into clean, plain Markdown reports.
 
-`birtir` runs an `.R` script, captures console output, saves plots and tables,
-and produces a structured `.md` file without requiring Quarto, R Markdown, or
-HTML rendering.
+`birtir` runs an `.R` script, captures console output, saves plots and
+tables, and produces a structured `.md` file without requiring Quarto, R
+Markdown, or HTML rendering.
 
 ## Installation
 
@@ -37,7 +37,7 @@ summary(model)
 coef_tbl <- as.data.frame(summary(model)$coefficients) |>
   tibble::rownames_to_column("term")
 
-md_table(coef_tbl, caption = "Coefficient table", digits = 3)
+birtir::md_table(coef_tbl, caption = "Coefficient table", digits = 3)
 
 #| h2: Plot
 
@@ -45,7 +45,7 @@ p <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
   ggplot2::geom_point() +
   ggplot2::geom_smooth(method = "lm")
 
-md_plot(p, caption = "MPG vs weight")
+birtir::md_plot(p, caption = "MPG vs weight")
 ```
 
 Render it with:
@@ -66,6 +66,20 @@ outputs/
       tbl-001.md
 ```
 
+## Interactive use
+
+The same helpers are usable outside rendering too:
+
+``` r
+coef_tbl |> birtir::md_table(caption = "Coefficient table", digits = 3)
+birtir::md_plot(p, caption = "MPG vs weight")
+```
+
+Outside `render_analysis_md()`:
+
+- `birtir::md_table()` prints a pipe-table Markdown preview
+- `birtir::md_plot()` prints the ggplot normally
+
 ## Design
 
 - Plain Markdown only
@@ -73,15 +87,17 @@ outputs/
 - Minimal syntax in scripts
 - Explicit helpers for plots and tables
 - One script to one report folder
+- One helper API for both manual work and report rendering
 
 ## Legacy workflow
 
-The older plotting helpers are still in the package for now so you can refer
-back to earlier ideas while rebuilding `birtir`.
+The older plotting helpers are still in the package for now so you can
+refer back to earlier ideas while rebuilding `birtir`.
 
 - The Markdown renderer is the primary workflow going forward.
-- Legacy plotting functions remain available but now emit deprecation warnings.
-- Legacy material is being kept as compatibility scaffolding, not as the main
-  package direction.
+- Legacy plotting functions remain available but now emit deprecation
+  warnings.
+- Legacy material is being kept as compatibility scaffolding, not as the
+  main package direction.
 
 See `README-legacy.md` for a short note on that transition.

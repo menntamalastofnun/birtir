@@ -2,7 +2,7 @@
 % Please edit documentation in R/hjalpar_foll.R
 \name{fa_kvarda}
 \alias{fa_kvarda}
-\title{Daemi um kvarda}
+\title{Deprecated legacy helper that returns example scale metadata}
 \usage{
 fa_kvarda()
 }
@@ -10,8 +10,14 @@ fa_kvarda()
 upplysingum um kvardan
 }
 \description{
-Daemi um kvarda
+Deprecated legacy helper that returns example scale metadata
+}
+\details{
+This function belongs to the legacy plotting workflow kept for reference
+during the transition to \code{render_analysis_md()}.
 }
 \examples{
+\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
 fa_kvarda()
+\dontshow{\}) # examplesIf}
 }

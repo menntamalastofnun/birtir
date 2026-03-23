@@ -2,32 +2,34 @@
 % Please edit documentation in R/teikna_mynd.R
 \name{einstaklingar_atridi}
 \alias{einstaklingar_atridi}
-\title{Mynd af atriðum nemanda - rétt/röng svör per atriði}
+\title{Deprecated legacy plot for per-item student responses}
 \usage{
 einstaklingar_atridi(df_items)
 }
 \arguments{
-\item{df_items}{einkunnir nemanda á atriðalevel}
+\item{df_items}{einkunnir nemanda a atridalevel}
 }
 \value{
-skilar mynd af svörum nemenda eftir atriði og þyngd atriða
+skilar mynd af svorum nemenda eftir atridi og thyngd atrida
 }
 \description{
-Mynd af atriðum nemanda - rétt/röng svör per atriði
+Deprecated legacy plot for per-item student responses
+}
+\details{
+This function belongs to the legacy plotting workflow kept for reference
+during the transition to \code{render_analysis_md()}.
 }
 \examples{
+\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
 einstaklingar_atridi(df_items)
-Áður en kallað er á fallið þarf að raða gögnunum með því að keyra þennan kóða þar sem df_atrdiði
-
-# Raða x-ásnum og y-ásnum þannig að punktarnir flokkist rétt saman
 df_student <- df_atridi \%>\%
   dplyr::mutate(
-    difficulty = factor(difficulty, levels = c("Mjög létt", "Létt", "Þungt", "Mjög þungt"))
+    difficulty = factor(difficulty, levels = c("Mjog lett", "Lett", "Thungt", "Mjog thungt"))
   ) \%>\%
   dplyr::arrange(difficulty, item_id) \%>\%  # Order by difficulty, then item_id
   mutate(student_response = factor(student_response, levels = c(TRUE, FALSE)))
 
 
-df_student <- subset(df_student, nafn == "María Birna Karlsdóttir")
-
+df_student <- subset(df_student, nafn == "Maria Birna Karlsdottir")
+\dontshow{\}) # examplesIf}
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/teikna_mynd_bekkjar.R
 \name{lysa_stodu_bekkjar_legend}
 \alias{lysa_stodu_bekkjar_legend}
-\title{Mynd af legend fyrir lysa_stodu}
+\title{Deprecated legacy legend for \code{lysa_stodu_bekkjar()}}
 \usage{
 lysa_stodu_bekkjar_legend()
 }
@@ -10,9 +10,14 @@ lysa_stodu_bekkjar_legend()
 skilar mynd af legend fyrir lysa_stodu
 }
 \description{
-Mynd af legend fyrir lysa_stodu
+Deprecated legacy legend for \code{lysa_stodu_bekkjar()}
+}
+\details{
+This function belongs to the legacy plotting workflow kept for reference
+during the transition to \code{render_analysis_md()}.
 }
 \examples{
+\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
 lysa_stodu_bekkjar_legend()
-
+\dontshow{\}) # examplesIf}
 }

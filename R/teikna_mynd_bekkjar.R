@@ -1,17 +1,24 @@
-#' Mynd af stadsetningu nemanda a kvarda asamt lysingu
+﻿#' Deprecated legacy plot for class-level score position
+#'
+#' @details
+#' This function belongs to the legacy plotting workflow kept for reference
+#' during the transition to `render_analysis_md()`.
 #'
 #' @param data einkunnir nemanda
 #' @param kvardi tegund kvarda sem er notadur
-#' @param fag les eða stf, ákvarðar fjölda lita í litud_maelistika()
+#' @param fag les eda stf, akvardar fjolda lita i litud_maelistika()
 #' @importFrom dplyr filter
 #' @importFrom stringr str_wrap
 #' @import ggplot2
 #' @returns skilar mynd af stadsetningu bekkjar midad vid landsmedaltal a ollu profinu og undirthattum
 #' @export
 #'
-#' @examples lysa_stodu_bekkjur(df, kvardi)
+#' @examplesIf FALSE
+#' lysa_stodu_bekkjar(df, kvardi)
 #'
 lysa_stodu_bekkjar <- function(data, kvardi, fag = "les") {
+  warn_legacy("lysa_stodu_bekkjar")
+
   # Compute stats per profhluti
   heildartolur <- data |>
     group_by(profhluti) |>
@@ -110,10 +117,10 @@ lysa_stodu_bekkjar <- function(data, kvardi, fag = "les") {
     scale_y_continuous(
       limits = kvardi_bil,
       breaks = seq(kvardi_bil[1] + 1, kvardi_bil[2] - 1, by = 1),
-      name = "Mælitala"
+      name = "Maelitala"
     ) +
 
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) + # færir textann á x-ás í nýja línu ef hann er of langur
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) + # faerir textann a x-as i nyja linu ef hann er of langur
     theme(
       line = element_line(linetype = 1, colour = "#292A4B"),
       axis.text = element_text(face = "bold", size = rel(1)),
@@ -142,13 +149,17 @@ lysa_stodu_bekkjar <- function(data, kvardi, fag = "les") {
       axis.ticks.x = element_blank(),
       axis.line.x = element_blank(),
       axis.line.y = element_line(
-        linewidth = 1#, # Breytti úr 1.5
+        linewidth = 1#, # Breytti ur 1.5
       )
     )
 }
 
 
-#' Mynd af legend fyrir lysa_stodu
+#' Deprecated legacy legend for `lysa_stodu_bekkjar()`
+#'
+#' @details
+#' This function belongs to the legacy plotting workflow kept for reference
+#' during the transition to `render_analysis_md()`.
 #'
 #' @importFrom dplyr filter
 #' @importFrom stringr str_wrap
@@ -157,11 +168,14 @@ lysa_stodu_bekkjar <- function(data, kvardi, fag = "les") {
 #' @returns skilar mynd af legend fyrir lysa_stodu
 #' @export
 #'
-#' @examples lysa_stodu_bekkjar_legend()
+#' @examplesIf FALSE
+#' lysa_stodu_bekkjar_legend()
 #'
 lysa_stodu_bekkjar_legend <- function() {
+  warn_legacy("lysa_stodu_bekkjar_legend")
+
   legend_df <- tibble::tibble(
-    group = c("Bekkur", "95% öryggisbil", "Landsmeðaltal"),
+    group = c("Bekkur", "95% oryggisbil", "Landsmedaltal"),
     x = c(0.15, 0.6, 1.2),
     y = c(1, 1, 1),
     ymin = c(NA, 0.95, NA),
@@ -180,15 +194,15 @@ lysa_stodu_bekkjar_legend <- function() {
     ) +
     # Error bar (CI)
     geom_errorbar(
-      data = dplyr::filter(legend_df, group == "95% öryggisbil"),
+      data = dplyr::filter(legend_df, group == "95% oryggisbil"),
       aes(x = x, ymin = ymin, ymax = ymax),
       color = "#292A4B",
       width = 0.02,
       linewidth = 0.6
     ) +
-    # Dotted line (Landsmeðaltal)
+    # Dotted line (Landsmedaltal)
     geom_segment(
-      data = dplyr::filter(legend_df, group == "Landsmeðaltal"),
+      data = dplyr::filter(legend_df, group == "Landsmedaltal"),
       aes(x = x - 0.05, xend = x + 0.05, y = y, yend = y),
       linetype = "dotted",
       color = "#292A4B",
@@ -219,10 +233,10 @@ lysa_stodu_bekkjar_legend <- function() {
 #   # Categorize maelitala
 #   df_summary <- df %>%
 #     mutate(category = case_when(
-#       maelitala < 3 ~ "Þarf inngrip",
-#       maelitala >= 3 & maelitala <= 7 ~ "Þarf líklega inngrip",
-#       maelitala >= 8 & maelitala <= 12 ~ "Í meðallagi",
-#       maelitala > 12 ~ "Þarfnast flóknara efnis"
+#       maelitala < 3 ~ "Tharf inngrip",
+#       maelitala >= 3 & maelitala <= 7 ~ "Tharf liklega inngrip",
+#       maelitala >= 8 & maelitala <= 12 ~ "I medallagi",
+#       maelitala > 12 ~ "Tharfnast floknara efnis"
 #     )) %>%
 #     count(category) %>%
 #     mutate(
@@ -235,14 +249,14 @@ lysa_stodu_bekkjar_legend <- function() {
 #     geom_col(width = 1, color = "white") +
 #     coord_polar(theta = "y") +
 #     geom_text(aes(label = label), position = position_stack(vjust = 0.5), color = "black", size = 4.5) +
-#     scale_fill_manual(values = c("Þarf inngrip" = "#D8C1FF", "Þarf líklega inngrip" = "#E2D1FF", "Í meðallagi" = "#EBE0FF", "Þarfnast flóknara efnis" = "#F5EFFF")) +
+#     scale_fill_manual(values = c("Tharf inngrip" = "#D8C1FF", "Tharf liklega inngrip" = "#E2D1FF", "I medallagi" = "#EBE0FF", "Tharfnast floknara efnis" = "#F5EFFF")) +
 #     xlim(1, 2.5) +  # creates the hole
 #     theme_void() +
 #     theme(
 #       legend.position = "none",
 #       plot.title = element_text(hjust = 0.5, face = "bold", color = "#292A4B")
 #     ) +
-#     labs(title = "Dreifing nemenda eftir mælitölu")
+#     labs(title = "Dreifing nemenda eftir maelitolu")
 # }
 #
 
@@ -258,11 +272,11 @@ plot_donut_subset <- function(df, label_name, filter_expr) {
     count(in_group) %>%
     mutate(
       percent = n / sum(n),
-      label = ifelse(in_group, paste0( percent(percent, accuracy = 1), "\n", label_name), paste0("Aðrir\n", percent(percent, accuracy = 1)))
+      label = ifelse(in_group, paste0( percent(percent, accuracy = 1), "\n", label_name), paste0("Adrir\n", percent(percent, accuracy = 1)))
     )
 
   # Dynamically create color mapping
-  color_mapping <- setNames(
+  color_mapping <- stats::setNames(
     c("#D8C1FF", "#F5EFFF"),
     df_summary$label[order(df_summary$in_group, decreasing = TRUE)]
   )
@@ -296,13 +310,13 @@ plot_donut_subset <- function(df, label_name, filter_expr) {
     pull(label)
 
   # Define colors
-  color_mapping <- setNames(
+  color_mapping <- stats::setNames(
     c("#D8C1FF", "#F5EFFF"),
     df_summary$in_group[order(df_summary$in_group, decreasing = TRUE)]
   )
 
   # Convert logical to character for fill
-  df_summary$fill_label <- factor(df_summary$in_group, labels = c("Aðrir", label_name))
+  df_summary$fill_label <- factor(df_summary$in_group, labels = c("Adrir", label_name))
 
   ggplot(df_summary, aes(x = 2, y = percent, fill = fill_label)) +
     geom_col(width = 1, color = "white") +
@@ -310,7 +324,7 @@ plot_donut_subset <- function(df, label_name, filter_expr) {
     # Center label manually added
     annotate("text", x = 0.2, y = 0, label = central_label, size = 6, fontface = "bold", color = "#292A4B", lineheight = 1.1) +
     xlim(0.1, 2.5) +
-    scale_fill_manual(values = setNames(c("#D8C1FF", "#F5EFFF"), c(label_name, "Aðrir"))) +
+    scale_fill_manual(values = stats::setNames(c("#D8C1FF", "#F5EFFF"), c(label_name, "Adrir"))) +
     theme_void() +
     labs(title = NULL) +
     theme(
@@ -361,7 +375,7 @@ plot_donut_subset <- function(df, label_name, filter_expr) {
 #'       alpha = 1,
 #'       litur = "#D8C1FF"
 #'     ) +
-#'     # Tek út línurnar fyrir hvern punkt sem tengja við titilinn á x-ás
+#'     # Tek ut linurnar fyrir hvern punkt sem tengja vid titilinn a x-as
 #'     # geom_segment(aes(xend = profhluti,y = 1, yend = einkunn),
 #'     #              color = "#292A4B", linewidth =  0.5) +
 #'     geom_errorbar(
@@ -391,12 +405,12 @@ plot_donut_subset <- function(df, label_name, filter_expr) {
 #'     scale_y_continuous(
 #'       limits = c(1, 19), #kvardi_bil[1]+1, kvardi_bil[2]-1),
 #'       breaks = seq(from  = kvardi_bil[1]+1, to = kvardi_bil[2]-1, by = 1),
-#'       name = "Mælitala"
+#'       name = "Maelitala"
 #'     ) +
 #'     theme(
 #'       line = element_line(linetype = 1, colour = "#292A4B"),
 #'       axis.text = element_text(face = "bold", size = rel(1)),
-#'       #axis.text.x = element_text(angle = 45, hjust = 1), # Bætti við til að snúa labels á x-ás þannig að þau blandist ekki inn í hvert annað
+#'       #axis.text.x = element_text(angle = 45, hjust = 1), # Baetti vid til ad snua labels a x-as thannig ad thau blandist ekki inn i hvert annad
 #'       text = element_text(colour = "black"),
 #'       rect = element_rect(
 #'         fill = NULL,
@@ -424,7 +438,7 @@ plot_donut_subset <- function(df, label_name, filter_expr) {
 #'       axis.ticks.x = element_blank(),
 #'       axis.line.x = element_blank(),
 #'       axis.line.y = element_line(
-#'         linewidth = 1#, # Breytti úr 1.5
+#'         linewidth = 1#, # Breytti ur 1.5
 #'
 #'         #arrow = grid::arrow(length = unit(0.3, "cm"), ends = "both")
 #'       ),
@@ -468,3 +482,4 @@ plot_donut_subset <- function(df, label_name, filter_expr) {
 #'
 #'
 #'
+

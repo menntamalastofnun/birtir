@@ -2,7 +2,7 @@
 % Please edit documentation in R/teikna_mynd.R
 \name{lysa_stodu}
 \alias{lysa_stodu}
-\title{Mynd af stadsetningu nemanda a kvarda asamt lysingu}
+\title{Deprecated legacy plot for student scale position}
 \usage{
 lysa_stodu(data, kvardi, fag)
 }
@@ -11,15 +11,20 @@ lysa_stodu(data, kvardi, fag)
 
 \item{kvardi}{tegund kvarda sem er notadur}
 
-\item{fag}{"les" eða "stf" - ræður fjölda bakgrunsslita}
+\item{fag}{"les" eda "stf" - raedur fjolda bakgrunsslita}
 }
 \value{
 skilar mynd af stadsettningu nemanda
 }
 \description{
-Mynd af stadsetningu nemanda a kvarda asamt lysingu
+Deprecated legacy plot for student scale position
+}
+\details{
+This function belongs to the legacy plotting workflow kept for reference
+during the transition to \code{render_analysis_md()}.
 }
 \examples{
-lysa_stodu(fa_heildartolu(5), fa_kvarda())
-
+\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
+lysa_stodu(fa_heildartolu(5), fa_kvarda(), fag = "les")
+\dontshow{\}) # examplesIf}
 }

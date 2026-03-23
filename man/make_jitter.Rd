@@ -2,19 +2,25 @@
 % Please edit documentation in R/hjalpar_foll.R
 \name{make_jitter}
 \alias{make_jitter}
-\title{Fall sem hjálpar að raða atriðunum í atridagreining_einstaklinga() fallinu}
+\title{Deprecated legacy helper for item-plot jitter}
 \usage{
 make_jitter(n)
 }
 \arguments{
-\item{n}{Fjöldi gagnapunkta í hverri línu}
+\item{n}{Fjoldi gagnapunkta i hverri linu}
 }
 \value{
-Lárétta uppröðun á gagnapunktum í atridagreining_einstaklinga()
+Laretta upprodun a gagnapunktum i atridagreining_einstaklinga()
 }
 \description{
-Fall sem hjálpar að raða atriðunum í atridagreining_einstaklinga() fallinu
+Deprecated legacy helper for item-plot jitter
+}
+\details{
+This function belongs to the legacy plotting workflow kept for reference
+during the transition to \code{render_analysis_md()}.
 }
 \examples{
+\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
 make_jitter(unique(n))[point_index]
+\dontshow{\}) # examplesIf}
 }

@@ -1,29 +1,36 @@
-#' Mynd af stadsetningu nemanda a kvarda asamt lysingu
+﻿#' Deprecated legacy plot for student scale position
+#'
+#' @details
+#' This function belongs to the legacy plotting workflow kept for reference
+#' during the transition to `render_analysis_md()`.
 #'
 #' @param data einkunnir nemanda
 #' @param kvardi tegund kvarda sem er notadur
-#' @param fag "les" eða "stf" - ræður fjölda bakgrunsslita
+#' @param fag "les" eda "stf" - raedur fjolda bakgrunsslita
 #' @importFrom dplyr filter
 #' @importFrom stringr str_wrap
 #' @import ggplot2
 #' @returns skilar mynd af stadsettningu nemanda
 #' @export
 #'
-#' @examples lysa_stodu(fa_heildartolu(5), fa_kvarda())
+#' @examplesIf FALSE
+#' lysa_stodu(fa_heildartolu(5), fa_kvarda(), fag = "les")
 #'
 lysa_stodu <- function(data, kvardi, fag) {
+  warn_legacy("lysa_stodu")
+
   heildartala <- data |>
     dplyr::filter(grepl("Heildartala", profhluti))
 
   kvardi_bil <- kvardi$kvardi_bil
   kvardi_lysing <- kvardi$kvardi_lysing
-  # Ákveður staðsetningu texta eftir því hvort við erum með fjögur bil (les) eða þrjú (stf)
+  # Akvedur stadsetningu texta eftir thvi hvort vid erum med fjogur bil (les) eda thrju (stf)
   kvardi_texta_bil <- if (fag == "les") {
     c(1.5, 5, 10, 16)
   } else if (fag == "stf") {
     c(3.5, 9.5, 16)
   } else {
-    stop("Óþekkt gildi í 'fag'. Notaðu 'les' eða 'stf'.")
+    stop("Othekkt gildi i 'fag'. Notadu 'les' eda 'stf'.")
   }
 
   if (nrow(heildartala) != 1) {
@@ -81,7 +88,7 @@ lysa_stodu <- function(data, kvardi, fag) {
       #limits = kvardi_bil,
       limits = c(0, 20),
       breaks = seq(from = kvardi_bil[1] + 1, to = kvardi_bil[2] - 1, by = 1),
-      name = "Mælitala"
+      name = "Maelitala"
     ) +
 
     guides(
@@ -123,7 +130,11 @@ lysa_stodu <- function(data, kvardi, fag) {
 }
 
 
-#' Mynd af legend fyrir lysa_stodu
+#' Deprecated legacy legend for `lysa_stodu()`
+#'
+#' @details
+#' This function belongs to the legacy plotting workflow kept for reference
+#' during the transition to `render_analysis_md()`.
 #'
 #' @importFrom dplyr filter
 #' @importFrom stringr str_wrap
@@ -132,11 +143,14 @@ lysa_stodu <- function(data, kvardi, fag) {
 #' @returns skilar mynd af legend fyrir lysa_stodu
 #' @export
 #'
-#' @examples lysa_stodu_legend()
+#' @examplesIf FALSE
+#' lysa_stodu_legend()
 #'
 lysa_stodu_legend <- function() {
+  warn_legacy("lysa_stodu_legend")
+
   legend_df <- tibble::tibble(
-    group = c("Nemandi", "95% öryggisbil", "Landsmeðaltal"),
+    group = c("Nemandi", "95% oryggisbil", "Landsmedaltal"),
     x = c(0.15, 0.6, 1.2),
     y = c(1, 1, 1),
     ymin = c(NA, 0.95, NA),
@@ -155,15 +169,15 @@ lysa_stodu_legend <- function() {
     ) +
     # Error bar (CI)
     geom_errorbar(
-      data = dplyr::filter(legend_df, group == "95% öryggisbil"),
+      data = dplyr::filter(legend_df, group == "95% oryggisbil"),
       aes(x = x, ymin = ymin, ymax = ymax),
       color = "#292A4B",
       width = 0.02,
       linewidth = 0.6
     ) +
-    # Dotted line (Landsmeðaltal)
+    # Dotted line (Landsmedaltal)
     geom_segment(
-      data = dplyr::filter(legend_df, group == "Landsmeðaltal"),
+      data = dplyr::filter(legend_df, group == "Landsmedaltal"),
       aes(x = x - 0.05, xend = x + 0.05, y = y, yend = y),
       linetype = "dotted",
       color = "#292A4B",
@@ -186,7 +200,11 @@ lysa_stodu_legend <- function() {
 }
 
 
-#' Mynd af profil nemandans
+#' Deprecated legacy plot for student profile scores
+#'
+#' @details
+#' This function belongs to the legacy plotting workflow kept for reference
+#' during the transition to `render_analysis_md()`.
 #'
 #' @param data einkunnir nemanda
 #' @param kvardi tegund kvarda sem er notadur
@@ -196,9 +214,12 @@ lysa_stodu_legend <- function() {
 #' @returns skilar mynd af stadsettningu nemanda
 #' @export
 #'
-#' @examples kortleggja(fa_heildartolu(5), fa_kvarda())
+#' @examplesIf FALSE
+#' kortleggja(fa_heildartolu(5), fa_kvarda())
 #'
 kortleggja <- function(data, kvardi) {
+  warn_legacy("kortleggja")
+
   heildartala <- data |>
     dplyr::filter(!grepl("Heildartala", profhluti))
 
@@ -224,7 +245,7 @@ kortleggja <- function(data, kvardi) {
       alpha = 1,
       litur = "#D8C1FF"
     ) +
-    # Tek út línurnar fyrir hvern punkt sem tengja við titilinn á x-ás
+    # Tek ut linurnar fyrir hvern punkt sem tengja vid titilinn a x-as
     # geom_segment(aes(xend = profhluti,y = 1, yend = einkunn),
     #              color = "#292A4B", linewidth =  0.5) +
     geom_errorbar(
@@ -255,12 +276,12 @@ kortleggja <- function(data, kvardi) {
     scale_y_continuous(
       limits = c(0, 20), #kvardi_bil[1]+1, kvardi_bil[2]-1),
       breaks = seq(from  = kvardi_bil[1]+1, to = kvardi_bil[2]-1, by = 1),
-      name = "Mælitala"
+      name = "Maelitala"
     ) +
     theme(
       line = element_line(linetype = 1, colour = "#292A4B"),
       axis.text = element_text(face = "bold", size = rel(1)),
-      #axis.text.x = element_text(angle = 45, hjust = 1), # Bætti við til að snúa labels á x-ás þannig að þau blandist ekki inn í hvert annað
+      #axis.text.x = element_text(angle = 45, hjust = 1), # Baetti vid til ad snua labels a x-as thannig ad thau blandist ekki inn i hvert annad
       text = element_text(colour = "black"),
       rect = element_rect(
         fill = NULL,
@@ -288,7 +309,7 @@ kortleggja <- function(data, kvardi) {
       axis.ticks.x = element_blank(),
       axis.line.x = element_blank(),
       axis.line.y = element_line(
-        linewidth = 1#, # Breytti úr 1.5
+        linewidth = 1#, # Breytti ur 1.5
 
         #arrow = grid::arrow(length = unit(0.3, "cm"), ends = "both")
       ),
@@ -299,7 +320,11 @@ kortleggja <- function(data, kvardi) {
 
 }
 
-#' Prenta ut myndir
+#' Deprecated legacy wrapper that prints student plots
+#'
+#' @details
+#' This function belongs to the legacy plotting workflow kept for reference
+#' during the transition to `render_analysis_md()`.
 #'
 #' @param data einkunnir nemanda
 #' @param kvardi tegund kvarda sem er notadur
@@ -307,13 +332,15 @@ kortleggja <- function(data, kvardi) {
 #' @returns myndir fyrir nidurstodur
 #' @export
 #'
-#' @examples
+#' @examplesIf FALSE
 #' data <- fa_heildartolu()
 #' kvardi <- fa_kvarda()
 #' teikna_mynd(data,kvardi)
 
 
 teikna_mynd <- function(data, kvardi) {
+  warn_legacy("teikna_mynd")
+
   heildartala <- data |>
     dplyr::filter(grepl("Heildartala", profhluti))
 
@@ -333,35 +360,38 @@ teikna_mynd <- function(data, kvardi) {
 
 
 
-#' Mynd af atriðum nemanda - rétt/röng svör per atriði
+#' Deprecated legacy plot for per-item student responses
 #'
-#' @param df_items einkunnir nemanda á atriðalevel
+#' @details
+#' This function belongs to the legacy plotting workflow kept for reference
+#' during the transition to `render_analysis_md()`.
+#'
+#' @param df_items einkunnir nemanda a atridalevel
 #' @importFrom dplyr filter
 #' @importFrom stringr str_wrap
 #' @import ggplot2
-#' @returns skilar mynd af svörum nemenda eftir atriði og þyngd atriða
+#' @returns skilar mynd af svorum nemenda eftir atridi og thyngd atrida
 #' @export
 #'
-#' @examples einstaklingar_atridi(df_items)
-#' Áður en kallað er á fallið þarf að raða gögnunum með því að keyra þennan kóða þar sem df_atrdiði
-#'
-#' # Raða x-ásnum og y-ásnum þannig að punktarnir flokkist rétt saman
+#' @examplesIf FALSE
+#' einstaklingar_atridi(df_items)
 #' df_student <- df_atridi %>%
 #'   dplyr::mutate(
-#'     difficulty = factor(difficulty, levels = c("Mjög létt", "Létt", "Þungt", "Mjög þungt"))
+#'     difficulty = factor(difficulty, levels = c("Mjog lett", "Lett", "Thungt", "Mjog thungt"))
 #'   ) %>%
 #'   dplyr::arrange(difficulty, item_id) %>%  # Order by difficulty, then item_id
 #'   mutate(student_response = factor(student_response, levels = c(TRUE, FALSE)))
 #'
 #'
-#' df_student <- subset(df_student, nafn == "María Birna Karlsdóttir")
+#' df_student <- subset(df_student, nafn == "Maria Birna Karlsdottir")
 #'
 einstaklingar_atridi <- function(df_items) {
+  warn_legacy("einstaklingar_atridi")
 
   # Sort the data by difficulty and item_id
   df_student <- df_items %>%
     dplyr::mutate(
-      difficulty = factor(difficulty, levels = c("Mjög létt", "Létt", "Þungt", "Mjög þungt"))
+      difficulty = factor(difficulty, levels = c("Mjog lett", "Lett", "Thungt", "Mjog thungt"))
     ) %>%
     dplyr::arrange(difficulty, item_id) %>%
     dplyr::mutate(
@@ -379,13 +409,13 @@ einstaklingar_atridi <- function(df_items) {
     ) +
     scale_fill_manual(
       values = c("TRUE" = "#D8C1FF", "FALSE" = "white"),
-      labels = c("TRUE" = "Rétt", "FALSE" = "Rangt"), # Label the legend
+      labels = c("TRUE" = "Rett", "FALSE" = "Rangt"), # Label the legend
       name = ""
       #guide = FALSE
     ) +
     scale_y_discrete(limits = levels(df_student$item_id)) +
     labs(
-      # title = paste0("Svör hjá ", df_student$nafn[1]),
+      # title = paste0("Svor hja ", df_student$nafn[1]),
       x = "",
       y = ""
     ) +
@@ -393,7 +423,7 @@ einstaklingar_atridi <- function(df_items) {
     theme(
       line = element_line(linetype = 1, colour = "#292A4B"),
       axis.text = element_text(face = "bold", size = rel(1)),
-      #axis.text.x = element_text(angle = 45, hjust = 1), # Bætti við til að snúa labels á x-ás þannig að þau blandist ekki inn í hvert annað
+      #axis.text.x = element_text(angle = 45, hjust = 1), # Baetti vid til ad snua labels a x-as thannig ad thau blandist ekki inn i hvert annad
       text = element_text(colour = "black"),
       rect = element_rect(
         fill = NULL,
@@ -430,23 +460,30 @@ einstaklingar_atridi <- function(df_items) {
 
 
 
-#' Uppfærð mynd sem sýnir rétt/röng svör nemanda eftir atriðalýsingu og þyngd atriðis
+#' Deprecated legacy plot for item analysis
 #'
-#' @param df einkunnir nemanda á atriðalevel
+#' @details
+#' This function belongs to the legacy plotting workflow kept for reference
+#' during the transition to `render_analysis_md()`.
+#'
+#' @param df einkunnir nemanda a atridalevel
 #' @import dplyr
 #' @import stringr
 #' @import ggplot2
-#' @returns skilar mynd af svörum nemenda eftir atriði og þyngd atriða
+#' @returns skilar mynd af svorum nemenda eftir atridi og thyngd atrida
 #' @export
 #'
-#' @examples atridagreining_einstaklinga(df)
+#' @examplesIf FALSE
+#' atridagreining_einstaklinga(df)
 #'
 atridagreining_einstaklinga <- function(df) {
+  warn_legacy("atridagreining_einstaklinga")
+
   df <- df %>%
     mutate(
       item_statement_wrapped = stringr::str_wrap(item_statement, width = 45),
       rett = factor(rett, levels = c(TRUE, FALSE)),
-      tyngd = factor(tyngd, levels = c("Létt", "Miðlungs", "Þungt")),
+      tyngd = factor(tyngd, levels = c("Lett", "Midlungs", "Thungt")),
       tyngd_num = as.numeric(tyngd)
     ) %>%
     group_by(tyngd, item_statement_wrapped) %>%
@@ -470,23 +507,23 @@ atridagreining_einstaklinga <- function(df) {
     ) +
     # scale_x_continuous(
     #   breaks = 1:3,
-    #   labels = c("Létt", "Miðlungs", "Þungt"),
+    #   labels = c("Lett", "Midlungs", "Thungt"),
     #   expand = expansion(add = 0.3)
     # ) +
     scale_x_continuous(
       breaks = 1:3,
-      labels = c("Létt", "Miðlungs", "Þungt"),
-      limits = c(0.7, 3.3),  # Pad slightly around 1–3 to leave space for jitter
+      labels = c("Lett", "Midlungs", "Thungt"),
+      limits = c(0.7, 3.3),  # Pad slightly around 1-3 to leave space for jitter
       expand = expansion(add = 0)
     ) +
     scale_fill_manual(
       values = c("TRUE" = "#D8C1FF", "FALSE" = "white"),
-      labels = c("Rétt", "Rangt"),
+      labels = c("Rett", "Rangt"),
       guide = guide_legend(order = 1)
     ) +
     scale_color_manual(
       values = c("TRUE" = "#292A4B", "FALSE" = "#292A4B"),
-      labels = c("Rétt", "Rangt"),
+      labels = c("Rett", "Rangt"),
       guide = guide_legend(order = 1)
     ) +
     theme_minimal() +
@@ -504,21 +541,28 @@ atridagreining_einstaklinga <- function(df) {
     )
 }
 
-#' Mynd sem sýnir hlutfall nemenda sem er undir ákveðnu viðmiði
+#' Deprecated legacy plot for student share under a threshold
 #'
-#' @param df einkunnir nemanda á atriðalevel með þyngd atriðanna flokkað í mjög létt, létt, þungt og mjög þungt
-#' @param leidbeiningar umsögn um stöðu nemenda á viðmiðinu
-#' @param filter_expr mælitölubilið sem verið er að skoða
+#' @details
+#' This function belongs to the legacy plotting workflow kept for reference
+#' during the transition to `render_analysis_md()`.
+#'
+#' @param df einkunnir nemanda a atridalevel med thyngd atridanna flokkad i mjog lett, lett, thungt og mjog thungt
+#' @param leidbeiningar umsogn um stodu nemenda a vidmidinu
+#' @param filter_expr maelitolubilid sem verid er ad skoda
 #' @importFrom dplyr filter
 #' @importFrom stringr str_wrap
 #' @import ggplot2
 #' @import scales
-#' @returns skilar mynd af hlutfalli nemenda á ákveðnu mælitölubili
+#' @returns skilar mynd af hlutfalli nemenda a akvednu maelitolubili
 #' @export
 #'
-#' @examples skifurit(df_bekkur, "þurfa mikinn stuðning", filter_expr < 3)
+#' @examplesIf FALSE
+#' skifurit(df_bekkur, "thurfa mikinn studning", filter_expr < 3)
 #'
 skifurit <- function(df, leidbeiningar, filter_expr) {
+  warn_legacy("skifurit")
+
   filter_expr <- rlang::enquo(filter_expr)
 
   df_summary <- df  |>
@@ -541,7 +585,7 @@ skifurit <- function(df, leidbeiningar, filter_expr) {
     central_label <- paste0("0% nemenda\n", leidbeiningar)
   }
 
-  df_summary$fill_label <- factor(df_summary$in_group, labels = c("Aðrir", leidbeiningar))
+  df_summary$fill_label <- factor(df_summary$in_group, labels = c("Adrir", leidbeiningar))
 
   ggplot(df_summary, aes(x = 2, y = percent, fill = fill_label)) +
     geom_col(width = 1, color = "white") +
@@ -549,7 +593,7 @@ skifurit <- function(df, leidbeiningar, filter_expr) {
     annotate("text", x = 0.2, y = 0, label =percent,
              size = 12, fontface = "bold", color = "#292A4B", lineheight = 1.1) +
     xlim(0.1, 2.5) +
-    scale_fill_manual(values = setNames(c("#D8C1FF", "#F5EFFF"), c(leidbeiningar, "Aðrir"))) +
+    scale_fill_manual(values = stats::setNames(c("#D8C1FF", "#F5EFFF"), c(leidbeiningar, "Adrir"))) +
     theme_void() +
     labs(title = central_label) +
     theme(
@@ -558,5 +602,4 @@ skifurit <- function(df, leidbeiningar, filter_expr) {
       clip = "off"
     )
 }
-
 

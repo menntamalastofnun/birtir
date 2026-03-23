@@ -48,7 +48,7 @@ summary(model)
 coef_tbl <- as.data.frame(summary(model)$coefficients) |>
   tibble::rownames_to_column("term")
 
-md_table(coef_tbl, caption = "Coefficient table", digits = 3)
+birtir::md_table(coef_tbl, caption = "Coefficient table", digits = 3)
 
 #| h2: Plot
 
@@ -56,7 +56,7 @@ p <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
   ggplot2::geom_point() +
   ggplot2::geom_smooth(method = "lm")
 
-md_plot(p, caption = "MPG vs weight")
+birtir::md_plot(p, caption = "MPG vs weight")
 ```
 
 Render it with:
@@ -77,6 +77,20 @@ outputs/
       tbl-001.md
 ```
 
+## Interactive use
+
+The same helpers are usable outside rendering too:
+
+``` r
+coef_tbl |> birtir::md_table(caption = "Coefficient table", digits = 3)
+birtir::md_plot(p, caption = "MPG vs weight")
+```
+
+Outside `render_analysis_md()`:
+
+- `birtir::md_table()` prints a pipe-table Markdown preview
+- `birtir::md_plot()` prints the ggplot normally
+
 ## Design
 
 - Plain Markdown only
@@ -84,6 +98,7 @@ outputs/
 - Minimal syntax in scripts
 - Explicit helpers for plots and tables
 - One script to one report folder
+- One helper API for both manual work and report rendering
 
 ## Legacy workflow
 

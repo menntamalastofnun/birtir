@@ -2,24 +2,28 @@
 % Please edit documentation in R/hjalpar_foll.R
 \name{litud_maelistika}
 \alias{litud_maelistika}
-\title{Byr til litada maelistiku}
+\title{Deprecated legacy helper for colored score scales}
 \usage{
 litud_maelistika(y_range, cutoffs, litur = "#D8C1FF", alpha = 1, fag = "les")
 }
 \arguments{
-\item{y_range}{hæsta og lægsta gildi á kvarðanum}
+\item{y_range}{haesta og laegsta gildi a kvardanum}
 
-\item{cutoffs}{þar sem skilin á milli flokka eru}
+\item{cutoffs}{thar sem skilin a milli flokka eru}
 
-\item{litur}{litur kvarðans}
+\item{litur}{litur kvardans}
 
-\item{alpha}{gegnsæi lita}
+\item{alpha}{gegnsaei lita}
 
-\item{fag}{fagið, "les" eða "stf" — ræður fjölda lita}
+\item{fag}{fagid, "les" eda "stf" - raedur fjolda lita}
 }
 \value{
-litadri mælistiku fyrir ggplot
+litadri maelistiku fyrir ggplot
 }
 \description{
-Byr til litada maelistiku
+Deprecated legacy helper for colored score scales
+}
+\details{
+This function belongs to the legacy plotting workflow kept for reference
+during the transition to \code{render_analysis_md()}.
 }
