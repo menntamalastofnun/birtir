@@ -521,16 +521,21 @@ atridagreining_einstaklinga <- function(df) {
 skifurit <- function(df, leidbeiningar, filter_expr) {
   filter_expr <- rlang::enquo(filter_expr)
 
-  df_summary <- df %>%
-    mutate(in_group = !!filter_expr) %>%
-    count(in_group) %>%
-    mutate(percent = n / sum(n))
+  df_summary <- df  |>
+    dplyr::mutate(in_group = !!filter_expr) |>
+    dplyr::count(in_group) |>
+    dplyr::mutate(percent = n / sum(n))
 
   # Build the central label (just for the in_group = TRUE case)
-  central_label <- df_summary %>%
-    filter(in_group) %>%
-    mutate(label = paste0(scales::percent(percent, accuracy = 1), " nemenda\n", leidbeiningar)) %>%
-    pull(label)
+  central_label <- df_summary |>
+    dplyr::filter(in_group)  |>
+    dplyr::mutate(label = paste0(leidbeiningar)) |>
+    dplyr::pull(label)
+
+  percent <-  df_summary |>
+    dplyr::filter(in_group)  |>
+    mutate(label = scales::percent(percent, accuracy = 1)) |>
+    dplyr::pull(label)
 
   if(length(central_label) == 0) {
     central_label <- paste0("0% nemenda\n", leidbeiningar)
@@ -541,11 +546,12 @@ skifurit <- function(df, leidbeiningar, filter_expr) {
   ggplot(df_summary, aes(x = 2, y = percent, fill = fill_label)) +
     geom_col(width = 1, color = "white") +
     coord_polar(theta = "y") +
-    annotate("text", x = 0.2, y = 0, label = central_label, size = 12, fontface = "bold", color = "#292A4B", lineheight = 1.1) +
+    annotate("text", x = 0.2, y = 0, label =percent,
+             size = 12, fontface = "bold", color = "#292A4B", lineheight = 1.1) +
     xlim(0.1, 2.5) +
     scale_fill_manual(values = setNames(c("#D8C1FF", "#F5EFFF"), c(leidbeiningar, "Aðrir"))) +
     theme_void() +
-    labs(title = NULL) +
+    labs(title = central_label) +
     theme(
       legend.position = "none",
       #plot.margin = margin(0.5, 0.5, 0.5, 0.5),
