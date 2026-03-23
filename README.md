@@ -73,3 +73,15 @@ outputs/
 - Minimal syntax in scripts
 - Explicit helpers for plots and tables
 - One script to one report folder
+
+## Legacy workflow
+
+The older plotting helpers are still in the package for now so you can refer
+back to earlier ideas while rebuilding `birtir`.
+
+- The Markdown renderer is the primary workflow going forward.
+- Legacy plotting functions remain available but now emit deprecation warnings.
+- Legacy material is being kept as compatibility scaffolding, not as the main
+  package direction.
+
+See `README-legacy.md` for a short note on that transition.
