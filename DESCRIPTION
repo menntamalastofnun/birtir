@@ -1,24 +1,33 @@
 Package: birtir
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Render Analysis Scripts to Plain Markdown Reports
+Version: 0.0.2
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Auðun", "Valborgarson", email = "your@email.com", role = c("aut", "cre"))
+Description: Runs analysis scripts, captures console output, and writes plain
+    Markdown reports. Exported helpers such as md_table() and md_plot() can be
+    used directly in scripts, printing previews interactively and writing into
+    the active report during render_analysis_md().
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-Imports: 
-    cli,
+Imports:
     dplyr,
+    fs,
     ggplot2,
     glue,
+    knitr,
     lifecycle,
+    purrr,
     rlang,
+    scales,
     stringr,
     tibble,
+    tidyr,
+    utils
+Suggests:
+    testthat (>= 3.0.0),
     withr
+Config/testthat/edition: 3
 URL: https://github.com/auv2/birtir
 BugReports: https://github.com/auv2/birtir/issues

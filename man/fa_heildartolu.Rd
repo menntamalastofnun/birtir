@@ -2,12 +2,12 @@
 % Please edit documentation in R/hjalpar_foll.R
 \name{fa_heildartolu}
 \alias{fa_heildartolu}
-\title{litid hjalparfall sem byr til gogn}
+\title{Deprecated legacy helper that builds example data}
 \usage{
 fa_heildartolu(
   maelitala = 10,
-  profhlutar = c("Heildartala", "Orðskilningur", "Djúpur skilningur", "Ályktun",
-    "Bókstaflegur skilningur"),
+  profhlutar = c("Heildartala", "Ordskilningur", "Djupur skilningur", "Alyktun",
+    "Bokstaflegur skilningur"),
   breytileiki = 1.5
 )
 }
@@ -22,8 +22,14 @@ fa_heildartolu(
 prufugogn
 }
 \description{
-litid hjalparfall sem byr til gogn
+Deprecated legacy helper that builds example data
+}
+\details{
+This function belongs to the legacy plotting workflow kept for reference
+during the transition to \code{render_analysis_md()}.
 }
 \examples{
+\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
 fa_heildartolu(10)
+\dontshow{\}) # examplesIf}
 }

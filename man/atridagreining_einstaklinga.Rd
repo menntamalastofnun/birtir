@@ -2,20 +2,25 @@
 % Please edit documentation in R/teikna_mynd.R
 \name{atridagreining_einstaklinga}
 \alias{atridagreining_einstaklinga}
-\title{Uppfærð mynd sem sýnir rétt/röng svör nemanda eftir atriðalýsingu og þyngd atriðis}
+\title{Deprecated legacy plot for item analysis}
 \usage{
 atridagreining_einstaklinga(df)
 }
 \arguments{
-\item{df}{einkunnir nemanda á atriðalevel}
+\item{df}{einkunnir nemanda a atridalevel}
 }
 \value{
-skilar mynd af svörum nemenda eftir atriði og þyngd atriða
+skilar mynd af svorum nemenda eftir atridi og thyngd atrida
 }
 \description{
-Uppfærð mynd sem sýnir rétt/röng svör nemanda eftir atriðalýsingu og þyngd atriðis
+Deprecated legacy plot for item analysis
+}
+\details{
+This function belongs to the legacy plotting workflow kept for reference
+during the transition to \code{render_analysis_md()}.
 }
 \examples{
+\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
 atridagreining_einstaklinga(df)
-
+\dontshow{\}) # examplesIf}
 }

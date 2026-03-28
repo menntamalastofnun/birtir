@@ -4,3 +4,8 @@
 .httr-oauth
 .DS_Store
 .quarto
+.outputs/
+outputs/
+README.html
+README.knit.md
+tests/testthat/Rplots.pdf

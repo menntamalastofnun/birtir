@@ -2,24 +2,29 @@
 % Please edit documentation in R/teikna_mynd.R
 \name{skifurit}
 \alias{skifurit}
-\title{Mynd sem sýnir hlutfall nemenda sem er undir ákveðnu viðmiði}
+\title{Deprecated legacy plot for student share under a threshold}
 \usage{
 skifurit(df, leidbeiningar, filter_expr)
 }
 \arguments{
-\item{df}{einkunnir nemanda á atriðalevel með þyngd atriðanna flokkað í mjög létt, létt, þungt og mjög þungt}
+\item{df}{einkunnir nemanda a atridalevel med thyngd atridanna flokkad i mjog lett, lett, thungt og mjog thungt}
 
-\item{leidbeiningar}{umsögn um stöðu nemenda á viðmiðinu}
+\item{leidbeiningar}{umsogn um stodu nemenda a vidmidinu}
 
-\item{filter_expr}{mælitölubilið sem verið er að skoða}
+\item{filter_expr}{maelitolubilid sem verid er ad skoda}
 }
 \value{
-skilar mynd af hlutfalli nemenda á ákveðnu mælitölubili
+skilar mynd af hlutfalli nemenda a akvednu maelitolubili
 }
 \description{
-Mynd sem sýnir hlutfall nemenda sem er undir ákveðnu viðmiði
+Deprecated legacy plot for student share under a threshold
+}
+\details{
+This function belongs to the legacy plotting workflow kept for reference
+during the transition to \code{render_analysis_md()}.
 }
 \examples{
-skifurit(df_bekkur, "þurfa mikinn stuðning", filter_expr < 3)
-
+\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
+skifurit(df_bekkur, "thurfa mikinn studning", filter_expr < 3)
+\dontshow{\}) # examplesIf}
 }

@@ -7,14 +7,12 @@
 
 <!-- badges: end -->
 
-Megin tilgangur með `birti` er að búa til myndir, töflur og skýrslur
-fyrir einkunnir nemenda. Birti má bæði nota til þess að búa til
-einstakar myndir og töflur en einnig til þess að hnýta saman skýrslur.
+Render R analysis scripts into clean, plain Markdown reports.
 
-Hér má sjá grunnmynd á virkni `birtis` hugmyndin er enn í þróun svo
-myndin getur breyst.
-
-![](images/image.png)
+`birtir` turns a plain `.R` analysis script into a plain `.md` report.
+It captures console output, saves plots and tables, and writes a
+structured Markdown artifact without requiring Quarto, R Markdown, or
+HTML rendering.
 
 ## Installation
 
@@ -26,74 +24,92 @@ You can install the development version of birtir from
 pak::pak("auv2/birtir")
 ```
 
-## Dæmi um notkun
+## Basic usage
 
-This is a basic example which shows you how to solve a common problem:
-
-``` r
-library(birtir)
-
-# Dæmi um gögn
-data <- tibble::tibble(
-    kennitala = "310200-3257",
-    nafn_nemanda = "Grettir Ásmundsson",
-    prof_numer = "les07",
-    dagsetnings_profs = "2025-03-17",
-    profhluti = c(
-      "Heildartala", "Orðskilningur",
-      "Djúpur skilningur", "Ályktun",
-      "Bókstaflegur skilningur"
-    ),
-    einkunn = c(10, 7, 7, 9, 8)
-  )
-
-# Dæmi um kvarða
-
-umsogn <- c(
-  "Nemandi skilur illa textann. \n",
-  "Nemandi skilur textann að hluta, og getur fundið einfaldar upplýsingar  í texta. \n\n",
-  "Nemandinn skilur innihald textans, getur auðveldlega fundið upplýsingar í textanum og getur dregið ályktanir. \n\n",
-  "Nemandi sýnir góðan skilning á þeim texta sem hann les, getur lesið á milli línanna og dregið flóknar ályktanir. \n"
-
-)
-
-kvardi <- list(
-  kvardi_bil = c(0,20),
-  kvardi_lysing = tibble::tibble(
-    einkunn = c(3, 6, 10, 15),
-    lysing = c("Þarfnast mikillar þjálfunar",
-               "Þarfnast þjálfunar",
-               "Á góðri leið",
-               "Framúrskarandi"),
-    umsogn = factor(umsogn, levels = umsogn)
-  )
-)
-```
+Write a normal analysis script with minimal structure:
 
 ``` r
-knitr::opts_chunk$set(dpi=1000)
-lysa_stodu(data, kvardi)
+#| h1: Regression example
+#| text: Simple linear model using mtcars.
+
+model <- lm(mpg ~ wt, data = mtcars)
+summary(model)
+
+coef_tbl <- as.data.frame(summary(model)$coefficients) |>
+  tibble::rownames_to_column("term")
+
+birtir::md_table(coef_tbl, caption = "Coefficient table", digits = 3)
+
+#| h2: Plot
+
+p <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
+  ggplot2::geom_point() +
+  ggplot2::geom_smooth(method = "lm")
+
+birtir::md_plot(p, caption = "MPG vs weight")
 ```
 
-<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
+Render it with:
 
 ``` r
-kortleggja(data, kvardi)
+birtir::render_analysis_md("scripts/regression_example.R")
 ```
 
-<img src="man/figures/README-unnamed-chunk-2-2.png" width="100%" />
+This creates:
+
+``` text
+outputs/
+  regression-example/
+    regression-example.md
+    images/
+      fig-001.png
+    tables/
+      tbl-001.md
+```
+
+## Interactive use
+
+The same helpers also work outside rendering:
 
 ``` r
-knitr::opts_chunk$set(dpi=1000)
-lysa_stodu(data, kvardi)
+coef_tbl |> birtir::md_table(caption = "Coefficient table", digits = 3)
+birtir::md_plot(p, caption = "MPG vs weight")
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+Outside `render_analysis_md()`:
 
-``` r
-kortleggja(data, kvardi)+ggplot2::coord_flip()
-#> Coordinate system already present. Adding new coordinate system, which will
-#> replace the existing one.
-```
+- `birtir::md_table()` prints a pipe-table Markdown preview
+- `birtir::md_plot()` prints the ggplot normally
 
-<img src="man/figures/README-unnamed-chunk-3-2.png" width="100%" />
+## Current limitations
+
+- `birtir` is currently designed for one render at a time in a normal
+  interactive R session.
+- Rendering the same script in parallel can still collide at the
+  report-folder level.
+- Analysis scripts can affect the current R session through `library()`,
+  `options()`, random seeds, and globals.
+- Supported directives are currently limited to `#| h1:`, `#| h2:`, and
+  `#| text:`.
+
+## Design
+
+- Plain Markdown only
+- Output-first, not code-first
+- Minimal syntax in scripts
+- Explicit helpers for plots and tables
+- One script to one report folder
+- One helper API for both manual work and report rendering
+
+## Legacy workflow
+
+The older plotting helpers are still in the package for now so you can
+refer back to earlier ideas while rebuilding `birtir`.
+
+- The Markdown renderer is the primary workflow going forward.
+- Legacy plotting functions remain available but now emit deprecation
+  warnings.
+- Legacy material is being kept as compatibility scaffolding, not as the
+  main package direction.
+
+See `README-legacy.md` for a short note on that transition.

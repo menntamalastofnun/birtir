@@ -4,9 +4,10 @@
 \name{birtir-package}
 \alias{birtir}
 \alias{birtir-package}
-\title{birtir: What the Package Does (One Line, Title Case)}
+\title{birtir: Render Analysis Scripts to Plain Markdown Reports}
 \description{
-What the package does (one paragraph).
+\code{birtir} runs plain \code{.R} scripts and turns them into structured Markdown
+reports, saving plots and tables alongside the generated \code{.md} file.
 }
 \seealso{
 Useful links:
@@ -17,7 +18,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Auðun Valborgarson \email{your@email.com}
 
 }
 \keyword{internal}

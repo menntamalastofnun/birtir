@@ -2,7 +2,7 @@
 % Please edit documentation in R/teikna_mynd.R
 \name{kortleggja}
 \alias{kortleggja}
-\title{Mynd af profil nemandans}
+\title{Deprecated legacy plot for student profile scores}
 \usage{
 kortleggja(data, kvardi)
 }
@@ -15,9 +15,14 @@ kortleggja(data, kvardi)
 skilar mynd af stadsettningu nemanda
 }
 \description{
-Mynd af profil nemandans
+Deprecated legacy plot for student profile scores
+}
+\details{
+This function belongs to the legacy plotting workflow kept for reference
+during the transition to \code{render_analysis_md()}.
 }
 \examples{
+\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
 kortleggja(fa_heildartolu(5), fa_kvarda())
-
+\dontshow{\}) # examplesIf}
 }

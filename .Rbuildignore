@@ -1,5 +1,12 @@
 ^birtir\.Rproj$
 ^\.Rproj\.user$
 ^README\.Rmd$
+^README\.html$
+^README\.knit\.md$
+^README-legacy\.md$
 ^R/bua_til_gervigogn\.R$
 ^images$
+^data$
+^dev$
+^outputs$
+^temp-mynd\.R$
