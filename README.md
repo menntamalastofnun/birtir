@@ -62,9 +62,9 @@ outputs/
   regression-example/
     regression-example.md
     images/
-      fig-001.png
+      regression-example_fig-001.png
     tables/
-      tbl-001.md
+      regression-example_tbl-001.md
 ```
 
 ## Interactive use
@@ -87,6 +87,8 @@ Outside `render_analysis_md()`:
   interactive R session.
 - Rendering the same script in parallel can still collide at the
   report-folder level.
+- Saved tables and figures are prefixed with the script slug, but the
+  report directory itself is still shared per script name.
 - Analysis scripts can affect the current R session through `library()`,
   `options()`, random seeds, and globals.
 - Supported directives are currently limited to `#| h1:`, `#| h2:`, and
