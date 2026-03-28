@@ -56,6 +56,7 @@ render_analysis_md <- function(script,
   state$tables_dir <- tables_dir
   state$report_dir <- report_dir
   state$script <- script
+  state$safe_name <- safe_name
 
   envir <- new.env(parent = globalenv())
   envir$.birtir_state <- state
@@ -312,7 +313,7 @@ write_md_table <- function(state, table_md, caption = NULL, filename = NULL) {
   state$table_index <- state$table_index + 1L
 
   if (is.null(filename)) {
-    filename <- sprintf("tbl-%03d.md", state$table_index)
+    filename <- sprintf("%s_tbl-%03d.md", state$safe_name, state$table_index)
   } else {
     filename <- paste0(sanitize_name(filename), ".md")
   }
@@ -321,7 +322,7 @@ write_md_table <- function(state, table_md, caption = NULL, filename = NULL) {
   writeLines(table_md, table_path)
 
   if (!is.null(caption)) {
-    add_md_line(state, paste0("**", caption, "**"))
+    add_md_line(state, paste0("**Table ", state$table_index, ". ", caption, "**"))
   }
 
   rel_path <- fs::path_rel(table_path, start = state$report_dir)
@@ -338,7 +339,7 @@ write_md_plot <- function(state, plot, caption = NULL, filename = NULL,
   state$plot_index <- state$plot_index + 1L
 
   if (is.null(filename)) {
-    filename <- sprintf("fig-%03d.png", state$plot_index)
+    filename <- sprintf("%s_fig-%03d.png", state$safe_name, state$plot_index)
   } else {
     filename <- paste0(sanitize_name(filename), ".png")
   }
