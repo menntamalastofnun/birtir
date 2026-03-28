@@ -322,7 +322,7 @@ write_md_table <- function(state, table_md, caption = NULL, filename = NULL) {
   writeLines(table_md, table_path)
 
   if (!is.null(caption)) {
-    add_md_line(state, paste0("**", caption, "**"))
+    add_md_line(state, paste0("**Table ", state$table_index, ". ", caption, "**"))
   }
 
   rel_path <- fs::path_rel(table_path, start = state$report_dir)

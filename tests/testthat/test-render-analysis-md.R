@@ -20,6 +20,7 @@ test_that("render_analysis_md captures output, directives, and helpers", {
 
   expect_true(any(grepl("^# Example report$", md_lines)))
   expect_true(any(grepl("^Intro paragraph\\.$", md_lines)))
+  expect_true(any(grepl("^\\*\\*Table 1\\. Values\\*\\*$", md_lines)))
   expect_true(any(grepl("^\\[Table: example-report_tbl-001\\.md\\]", md_lines)))
   expect_true(any(grepl("^\\[1\\] 2$", md_lines)))
   expect_true(file.exists(file.path(dirname(output_path), "tables", "example-report_tbl-001.md")))
@@ -47,7 +48,7 @@ test_that("render_analysis_md supports namespaced helper usage inside scripts", 
   report_dir <- dirname(output_path)
 
   expect_true(any(grepl("^# Namespaced helpers$", md_lines)))
-  expect_true(any(grepl("^\\*\\*Namespaced table\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*\\*Table 1\\. Namespaced table\\*\\*$", md_lines)))
   expect_true(any(grepl("^\\*\\*Figure 1\\. Namespaced plot\\*\\*$", md_lines)))
   expect_true(file.exists(file.path(report_dir, "tables", "namespaced-helpers_tbl-001.md")))
   expect_true(file.exists(file.path(report_dir, "images", "namespaced-helpers_fig-001.png")))
