@@ -14,13 +14,16 @@ render_analysis_md(script, output_dir = "outputs", show_code = FALSE)
 \item{show_code}{Logical; if \code{TRUE}, include source code blocks. Defaults to \code{FALSE}.}
 }
 \value{
-Invisibly returns the path to the generated markdown file.
+Invisibly returns the path to the generated Markdown file.
 }
 \description{
-Runs an R script, captures console output, saves markdown tables and ggplots,
-and writes a plain \code{.md} report.
+Runs a plain \code{.R} analysis script and writes a plain \code{.md} report.
 }
 \details{
+\code{render_analysis_md()} evaluates the script, captures visible console output,
+saves tables and ggplot objects created with \code{\link[=md_table]{md_table()}} and \code{\link[=md_plot]{md_plot()}},
+and writes a structured Markdown file into a report directory.
+
 The script may contain special comment directives:
 \itemize{
 \item \verb{#| h1: Title}
@@ -33,4 +36,8 @@ It may also call helper functions:
 \item \code{md_table()}
 \item \code{md_plot()}
 }
+
+\code{birtir} currently assumes one render at a time in a normal interactive
+R session. Scripts may use \code{library(...)} and can affect the current
+session while rendering.
 }

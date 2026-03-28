@@ -11,7 +11,8 @@ md_table(x, caption = NULL, filename = NULL, digits = NULL)
 
 \item{caption}{Optional caption text.}
 
-\item{filename}{Optional file stem used during rendering.}
+\item{filename}{Optional file stem used during rendering. The \code{.md}
+extension is added automatically.}
 
 \item{digits}{Optional number of digits for numeric columns.}
 }
@@ -26,4 +27,7 @@ active report and saved under the report's \verb{tables/} directory.
 \details{
 When called outside a render context, the table is printed as a pipe-style
 Markdown preview in the console.
+
+During rendering, filenames are saved into the active report's \verb{tables/}
+directory. Outside rendering, \code{md_table()} is a lightweight preview helper.
 }

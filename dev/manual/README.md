@@ -1,6 +1,14 @@
 # Manual Testing
 
-These scripts are for quick interactive checks while developing `birtir`.
+These scripts are for quick interactive checks of the current `birtir`
+workflow.
+
+Current package story:
+
+- write a plain analysis script
+- use `birtir::md_table()` and `birtir::md_plot()` inside that script
+- call `birtir::render_analysis_md()` to create the Markdown report
+- use the same helpers interactively outside rendering when needed
 
 Suggested flow:
 
@@ -14,3 +22,9 @@ Files:
   and `birtir::md_plot()`
 - `smoke-render.R`: end-to-end render check
 - `preview-helpers.R`: interactive preview check for helpers
+
+Current assumptions:
+
+- one render at a time in a normal interactive R session
+- helpers are the public script API
+- supported directives are `#| h1:`, `#| h2:`, and `#| text:`

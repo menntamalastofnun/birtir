@@ -21,9 +21,9 @@ knitr::opts_chunk$set(
 
 Render R analysis scripts into clean, plain Markdown reports.
 
-`birtir` runs an `.R` script, captures console output, saves plots and tables,
-and produces a structured `.md` file without requiring Quarto, R Markdown, or
-HTML rendering.
+`birtir` turns a plain `.R` analysis script into a plain `.md` report.
+It captures console output, saves plots and tables, and writes a structured
+Markdown artifact without requiring Quarto, R Markdown, or HTML rendering.
 
 ## Installation
 
@@ -36,7 +36,7 @@ pak::pak("auv2/birtir")
 
 ## Basic usage
 
-Write a normal analysis script with lightweight structure:
+Write a normal analysis script with minimal structure:
 
 ``` r
 #| h1: Regression example
@@ -79,7 +79,7 @@ outputs/
 
 ## Interactive use
 
-The same helpers are usable outside rendering too:
+The same helpers also work outside rendering:
 
 ``` r
 coef_tbl |> birtir::md_table(caption = "Coefficient table", digits = 3)
@@ -90,6 +90,17 @@ Outside `render_analysis_md()`:
 
 - `birtir::md_table()` prints a pipe-table Markdown preview
 - `birtir::md_plot()` prints the ggplot normally
+
+## Current limitations
+
+- `birtir` is currently designed for one render at a time in a normal
+  interactive R session.
+- Rendering the same script in parallel can still collide at the report-folder
+  level.
+- Analysis scripts can affect the current R session through `library()`,
+  `options()`, random seeds, and globals.
+- Supported directives are currently limited to `#| h1:`, `#| h2:`, and
+  `#| text:`.
 
 ## Design
 

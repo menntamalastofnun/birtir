@@ -1,7 +1,10 @@
 #' Render an analysis script to Markdown
 #'
-#' Runs an R script, captures console output, saves markdown tables and ggplots,
-#' and writes a plain `.md` report.
+#' Runs a plain `.R` analysis script and writes a plain `.md` report.
+#'
+#' `render_analysis_md()` evaluates the script, captures visible console output,
+#' saves tables and ggplot objects created with [md_table()] and [md_plot()],
+#' and writes a structured Markdown file into a report directory.
 #'
 #' The script may contain special comment directives:
 #' - `#| h1: Title`
@@ -16,7 +19,12 @@
 #' @param output_dir Root folder for rendered outputs. Defaults to `"outputs"`.
 #' @param show_code Logical; if `TRUE`, include source code blocks. Defaults to `FALSE`.
 #'
-#' @return Invisibly returns the path to the generated markdown file.
+#' @return Invisibly returns the path to the generated Markdown file.
+#'
+#' @details
+#' `birtir` currently assumes one render at a time in a normal interactive
+#' R session. Scripts may use `library(...)` and can affect the current
+#' session while rendering.
 #' @export
 render_analysis_md <- function(script,
                                output_dir = "outputs",
@@ -49,7 +57,7 @@ render_analysis_md <- function(script,
   state$report_dir <- report_dir
   state$script <- script
 
-  envir <- new.env(parent = parent.env(globalenv()))
+  envir <- new.env(parent = globalenv())
   envir$.birtir_state <- state
   envir$md_table <- md_table
   envir$md_plot <- md_plot
@@ -61,7 +69,7 @@ render_analysis_md <- function(script,
   birtir_set_render_state(state)
   on.exit(birtir_clear_render_state(), add = TRUE)
 
-  blocks <- parse_analysis_blocks(script_lines)
+  blocks <- parse_analysis_blocks(script_lines, script = script)
 
   for (block in blocks) {
     if (identical(block$type, "directive")) {
@@ -127,11 +135,16 @@ birtir_clear_render_state <- function() {
 #'
 #' @param x A data frame or table-like object.
 #' @param caption Optional caption text.
-#' @param filename Optional file stem used during rendering.
+#' @param filename Optional file stem used during rendering. The `.md`
+#'   extension is added automatically.
 #' @param digits Optional number of digits for numeric columns.
 #'
 #' @return Invisibly returns the saved table path during rendering, or the
 #'   Markdown table text outside rendering.
+#'
+#' @details
+#' During rendering, filenames are saved into the active report's `tables/`
+#' directory. Outside rendering, `md_table()` is a lightweight preview helper.
 #' @export
 md_table <- function(x, caption = NULL, filename = NULL, digits = NULL) {
   out <- x
@@ -177,13 +190,18 @@ md_table <- function(x, caption = NULL, filename = NULL, digits = NULL) {
 #'
 #' @param plot A ggplot object.
 #' @param caption Optional caption text.
-#' @param filename Optional file stem used during rendering.
+#' @param filename Optional file stem used during rendering. The `.png`
+#'   extension is added automatically.
 #' @param width Plot width in inches.
 #' @param height Plot height in inches.
 #' @param dpi Plot resolution.
 #'
 #' @return Invisibly returns the saved plot path during rendering, or the plot
 #'   object outside rendering.
+#'
+#' @details
+#' `md_plot()` saves ggplot objects into the active report during rendering and
+#' behaves like a normal plot preview helper otherwise.
 #' @export
 md_plot <- function(plot, caption = NULL, filename = NULL,
                     width = 7, height = 5, dpi = 300) {
@@ -205,7 +223,7 @@ md_plot <- function(plot, caption = NULL, filename = NULL,
   ))
 }
 
-parse_analysis_blocks <- function(lines) {
+parse_analysis_blocks <- function(lines, script = NULL) {
   blocks <- list()
   current_code <- character()
 
@@ -224,7 +242,8 @@ parse_analysis_blocks <- function(lines) {
     invisible(NULL)
   }
 
-  for (line in lines) {
+  for (i in seq_along(lines)) {
+    line <- lines[[i]]
     trimmed <- trimws(line)
 
     if (grepl("^#\\|\\s*(h1|h2|text)\\s*:", trimmed)) {
@@ -239,6 +258,25 @@ parse_analysis_blocks <- function(lines) {
         text = text
       )
       next
+    }
+
+    if (grepl("^#\\|", trimmed)) {
+      location <- if (is.null(script)) {
+        paste0("line ", i)
+      } else {
+        paste0(script, " near line ", i)
+      }
+
+      stop(
+        paste0(
+          "Invalid birtir directive in ",
+          location,
+          ": `",
+          trimmed,
+          "`. Supported directives are `#| h1:`, `#| h2:`, and `#| text:`."
+        ),
+        call. = FALSE
+      )
     }
 
     current_code <- c(current_code, line)

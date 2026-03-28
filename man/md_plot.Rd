@@ -18,7 +18,8 @@ md_plot(
 
 \item{caption}{Optional caption text.}
 
-\item{filename}{Optional file stem used during rendering.}
+\item{filename}{Optional file stem used during rendering. The \code{.png}
+extension is added automatically.}
 
 \item{width}{Plot width in inches.}
 
@@ -37,4 +38,7 @@ the active report.
 \details{
 When called outside a render context, the plot is printed normally for
 interactive use.
+
+\code{md_plot()} saves ggplot objects into the active report during rendering and
+behaves like a normal plot preview helper otherwise.
 }
