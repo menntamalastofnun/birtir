@@ -81,6 +81,33 @@ Outside `render_analysis_md()`:
 - `birtir::md_table()` prints a pipe-table Markdown preview
 - `birtir::md_plot()` prints the ggplot normally
 
+## Custom labels
+
+Use `report_labels()` to customize rendered caption names:
+
+``` r
+labels_is <- birtir::report_labels(
+  table = "Tafla",
+  figure = "Mynd"
+)
+
+birtir::render_analysis_md(
+  "scripts/regression_example.R",
+  labels = labels_is
+)
+```
+
+For convenience, you can define your own preset helper:
+
+``` r
+report_labels_is <- function() {
+  birtir::report_labels(
+    table = "Tafla",
+    figure = "Mynd"
+  )
+}
+```
+
 ## Current limitations
 
 - `birtir` is currently designed for one render at a time in a normal

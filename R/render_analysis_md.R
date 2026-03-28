@@ -18,6 +18,8 @@
 #' @param script Path to an `.R` script.
 #' @param output_dir Root folder for rendered outputs. Defaults to `"outputs"`.
 #' @param show_code Logical; if `TRUE`, include source code blocks. Defaults to `FALSE`.
+#' @param labels A label object created with [report_labels()]. Defaults to
+#'   English `Table` / `Figure` labels.
 #'
 #' @return Invisibly returns the path to the generated Markdown file.
 #'
@@ -28,11 +30,13 @@
 #' @export
 render_analysis_md <- function(script,
                                output_dir = "outputs",
-                               show_code = FALSE) {
+                               show_code = FALSE,
+                               labels = report_labels()) {
   stopifnot(file.exists(script))
   stopifnot(is.character(script), length(script) == 1)
   stopifnot(is.character(output_dir), length(output_dir) == 1)
   stopifnot(is.logical(show_code), length(show_code) == 1, !is.na(show_code))
+  validate_report_labels(labels)
 
   script_name <- tools::file_path_sans_ext(basename(script))
   safe_name <- sanitize_name(script_name)
@@ -57,6 +61,7 @@ render_analysis_md <- function(script,
   state$report_dir <- report_dir
   state$script <- script
   state$safe_name <- safe_name
+  state$labels <- labels
 
   envir <- new.env(parent = globalenv())
   envir$.birtir_state <- state
@@ -124,6 +129,59 @@ birtir_clear_render_state <- function() {
   }
 
   invisible(NULL)
+}
+
+#' Create report labels for rendered captions
+#'
+#' Builds a small label object used by [render_analysis_md()] to name rendered
+#' table and figure captions.
+#'
+#' @param table Label prefix used for rendered tables.
+#' @param figure Label prefix used for rendered figures.
+#'
+#' @return A `birtir_report_labels` object.
+#' @export
+report_labels <- function(table = "Table", figure = "Figure") {
+  labels <- list(
+    table = table,
+    figure = figure
+  )
+
+  validate_report_labels(labels)
+  structure(labels, class = "birtir_report_labels")
+}
+
+validate_report_labels <- function(labels) {
+  if (!is.list(labels)) {
+    stop("`labels` must be created with `report_labels()`.", call. = FALSE)
+  }
+
+  required <- c("table", "figure")
+  missing <- setdiff(required, names(labels))
+
+  if (length(missing) > 0) {
+    stop(
+      paste0(
+        "`labels` is missing required fields: ",
+        paste(missing, collapse = ", "),
+        "."
+      ),
+      call. = FALSE
+    )
+  }
+
+  invalid <- !vapply(labels[required], function(x) {
+    is.character(x) && length(x) == 1 && nzchar(x)
+  }, logical(1))
+
+  if (any(invalid)) {
+    stop(
+      "`labels$table` and `labels$figure` must be non-empty character strings.",
+      call. = FALSE
+    )
+  }
+
+  invisible(labels)
 }
 
 #' Format a table for Markdown reports
@@ -322,7 +380,10 @@ write_md_table <- function(state, table_md, caption = NULL, filename = NULL) {
   writeLines(table_md, table_path)
 
   if (!is.null(caption)) {
-    add_md_line(state, paste0("**Table ", state$table_index, ". ", caption, "**"))
+    add_md_line(
+      state,
+      paste0("**", state$labels$table, " ", state$table_index, ". ", caption, "**")
+    )
   }
 
   rel_path <- fs::path_rel(table_path, start = state$report_dir)
@@ -355,7 +416,10 @@ write_md_plot <- function(state, plot, caption = NULL, filename = NULL,
   )
 
   if (!is.null(caption)) {
-    add_md_line(state, paste0("**Figure ", state$plot_index, ". ", caption, "**"))
+    add_md_line(
+      state,
+      paste0("**", state$labels$figure, " ", state$plot_index, ". ", caption, "**")
+    )
   }
 
   rel_path <- fs::path_rel(plot_path, start = state$report_dir)

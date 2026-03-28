@@ -54,6 +54,38 @@ test_that("render_analysis_md supports namespaced helper usage inside scripts", 
   expect_true(file.exists(file.path(report_dir, "images", "namespaced-helpers_fig-001.png")))
 })
 
+test_that("render_analysis_md uses custom report labels", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "custom_labels.R")
+
+  writeLines(
+    c(
+      "tbl <- data.frame(term = 'x', value = 2)",
+      "birtir::md_table(tbl, caption = 'Tafla lysing')",
+      "",
+      "library(ggplot2)",
+      "p <- ggplot(mtcars, aes(wt, mpg)) + geom_point()",
+      "birtir::md_plot(p, caption = 'Mynd lysing')"
+    ),
+    script_path
+  )
+
+  labels_is <- report_labels(
+    table = "Tafla",
+    figure = "Mynd"
+  )
+
+  output_path <- render_analysis_md(
+    script_path,
+    output_dir = script_dir,
+    labels = labels_is
+  )
+  md_lines <- readLines(output_path, warn = FALSE)
+
+  expect_true(any(grepl("^\\*\\*Tafla 1\\. Tafla lysing\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*\\*Mynd 1\\. Mynd lysing\\*\\*$", md_lines)))
+})
+
 test_that("md_table prints a markdown preview outside render mode", {
   output <- capture.output(
     result <- md_table(
