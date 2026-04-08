@@ -86,6 +86,28 @@ test_that("render_analysis_md uses custom report labels", {
   expect_true(any(grepl("^\\*\\*Mynd 1\\. Mynd lysing\\*\\*$", md_lines)))
 })
 
+test_that("render_analysis_md supports a custom report name", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "item_analysis_template.R")
+
+  writeLines(
+    c(
+      "x <- 1 + 1",
+      "x"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(
+    script_path,
+    output_dir = script_dir,
+    report_name = "file01"
+  )
+
+  expect_match(basename(output_path), "^file01\\.md$")
+  expect_true(file.exists(file.path(script_dir, "file01", "file01.md")))
+})
+
 test_that("md_table prints a markdown preview outside render mode", {
   output <- capture.output(
     result <- md_table(

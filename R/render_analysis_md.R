@@ -17,6 +17,8 @@
 #'
 #' @param script Path to an `.R` script.
 #' @param output_dir Root folder for rendered outputs. Defaults to `"outputs"`.
+#' @param report_name Optional output/report name. Defaults to the script file
+#'   name without extension.
 #' @param show_code Logical; if `TRUE`, include source code blocks. Defaults to `FALSE`.
 #' @param labels A label object created with [report_labels()]. Defaults to
 #'   English `Table` / `Figure` labels.
@@ -30,16 +32,22 @@
 #' @export
 render_analysis_md <- function(script,
                                output_dir = "outputs",
+                               report_name = NULL,
                                show_code = FALSE,
                                labels = report_labels()) {
   stopifnot(file.exists(script))
   stopifnot(is.character(script), length(script) == 1)
   stopifnot(is.character(output_dir), length(output_dir) == 1)
+  stopifnot(
+    is.null(report_name) ||
+      (is.character(report_name) && length(report_name) == 1 && nzchar(report_name))
+  )
   stopifnot(is.logical(show_code), length(show_code) == 1, !is.na(show_code))
   validate_report_labels(labels)
 
   script_name <- tools::file_path_sans_ext(basename(script))
-  safe_name <- sanitize_name(script_name)
+  output_name <- if (is.null(report_name)) script_name else report_name
+  safe_name <- sanitize_name(output_name)
 
   report_dir <- fs::path(output_dir, safe_name)
   images_dir <- fs::path(report_dir, "images")

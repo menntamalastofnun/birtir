@@ -7,6 +7,7 @@
 render_analysis_md(
   script,
   output_dir = "outputs",
+  report_name = NULL,
   show_code = FALSE,
   labels = report_labels()
 )
@@ -15,6 +16,9 @@ render_analysis_md(
 \item{script}{Path to an \code{.R} script.}
 
 \item{output_dir}{Root folder for rendered outputs. Defaults to \code{"outputs"}.}
+
+\item{report_name}{Optional output/report name. Defaults to the script file
+name without extension.}
 
 \item{show_code}{Logical; if \code{TRUE}, include source code blocks. Defaults to \code{FALSE}.}
 
