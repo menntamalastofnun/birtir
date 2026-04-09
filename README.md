@@ -55,17 +55,55 @@ Render it with:
 birtir::render_analysis_md("scripts/regression_example.R")
 ```
 
+Use `report_name` when the output should use a different name from the
+script:
+
+``` r
+birtir::render_analysis_md(
+  script = "scripts/regression_example.R",
+  report_name = "regression-mtcars"
+)
+```
+
 This creates:
 
 ``` text
 outputs/
-  regression-example/
-    regression-example.md
+  regression-mtcars/
+    regression-mtcars.md
     images/
-      regression-example_fig-001.png
+      regression-mtcars_fig-001.png
     tables/
-      regression-example_tbl-001.md
+      regression-mtcars_tbl-001.md
 ```
+
+If `report_name` is omitted, `birtir` uses the script file name without
+the extension.
+
+## Template workflows
+
+`report_name` is especially useful when rendering one analysis template
+for many data files:
+
+``` r
+data_files <- list.files("data", pattern = "\\.xlsx$", full.names = TRUE)
+report_names <- tools::file_path_sans_ext(basename(data_files))
+
+purrr::walk2(
+  data_files,
+  report_names,
+  \(data_file, report_name) {
+    birtir::render_analysis_md(
+      script = "dev/item_analysis_template.R",
+      report_name = report_name
+    )
+  }
+)
+```
+
+The template script can read the current data file from your own project
+workflow, while `report_name` controls the report directory, Markdown
+file, and default table/figure filename prefixes.
 
 ## Interactive use
 
@@ -81,14 +119,39 @@ Outside `render_analysis_md()`:
 - `birtir::md_table()` prints a pipe-table Markdown preview
 - `birtir::md_plot()` prints the ggplot normally
 
+## Custom labels
+
+Use `report_labels()` to customize rendered caption names:
+
+``` r
+labels_is <- birtir::report_labels(
+  table = "Tafla",
+  figure = "Mynd"
+)
+
+birtir::render_analysis_md(
+  "scripts/regression_example.R",
+  labels = labels_is
+)
+```
+
+For convenience, you can define your own preset helper:
+
+``` r
+report_labels_is <- function() {
+  birtir::report_labels(
+    table = "Tafla",
+    figure = "Mynd"
+  )
+}
+```
+
 ## Current limitations
 
 - `birtir` is currently designed for one render at a time in a normal
   interactive R session.
-- Rendering the same script in parallel can still collide at the
+- Rendering the same report name in parallel can still collide at the
   report-folder level.
-- Saved tables and figures are prefixed with the script slug, but the
-  report directory itself is still shared per script name.
 - Analysis scripts can affect the current R session through `library()`,
   `options()`, random seeds, and globals.
 - Supported directives are currently limited to `#| h1:`, `#| h2:`, and
@@ -100,7 +163,7 @@ Outside `render_analysis_md()`:
 - Output-first, not code-first
 - Minimal syntax in scripts
 - Explicit helpers for plots and tables
-- One script to one report folder
+- One report name to one report folder
 - One helper API for both manual work and report rendering
 
 ## Legacy workflow
