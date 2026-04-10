@@ -70,7 +70,8 @@ Use `report_name` when the output should use a different name from the script:
 ``` r
 birtir::render_analysis_md(
   script = "scripts/regression_example.R",
-  report_name = "regression-mtcars"
+  report_name = "regression-mtcars",
+  params = list(dataset = "mtcars")
 )
 ```
 
@@ -91,16 +92,50 @@ extension.
 
 ## Template workflows
 
-`report_name` is especially useful when rendering one analysis template for
-many data files:
+`report_name` and `params` are especially useful when rendering one analysis
+template for many files:
 
 ``` r
-data_files <- list.files("data", pattern = "\\.xlsx$", full.names = TRUE)
-report_names <- tools::file_path_sans_ext(basename(data_files))
+purrr::pwalk(
+  list(
+    report_name = df$name,
+    id = df$id
+  ),
+  \(report_name, id) {
+    birtir::render_analysis_md(
+      script = "dev/item_analysis_template.R",
+      report_name = report_name,
+      labels = birtir::report_labels("Tafla", "Mynd"),
+      params = list(id = id)
+    )
+  }
+)
+```
 
+For example, `df` could look like:
+
+``` r
+df |> dplyr::select(name, id)
+```
+
+Inside `item_analysis_template.R`, those values are available directly:
+
+``` r
+#| h1: Item analysis
+
+id
+params$id
+```
+
+Each param is available by name in the script environment, and the full list is
+also available as `params`.
+
+If you only need custom naming, you can still use `report_name` on its own:
+
+``` r
 purrr::walk2(
   data_files,
-  report_names,
+  tools::file_path_sans_ext(basename(data_files)),
   \(data_file, report_name) {
     birtir::render_analysis_md(
       script = "dev/item_analysis_template.R",
@@ -109,10 +144,6 @@ purrr::walk2(
   }
 )
 ```
-
-The template script can read the current data file from your own project
-workflow, while `report_name` controls the report directory, Markdown file, and
-default table/figure filename prefixes.
 
 ## Interactive use
 

@@ -14,11 +14,15 @@
 #' It may also call helper functions:
 #' - `md_table()`
 #' - `md_plot()`
+#' - `md_text()`
 #'
 #' @param script Path to an `.R` script.
 #' @param output_dir Root folder for rendered outputs. Defaults to `"outputs"`.
 #' @param report_name Optional output/report name. Defaults to the script file
 #'   name without extension.
+#' @param params Optional named list of values exposed inside the script
+#'   environment. Each entry is available by name, and the full list is also
+#'   available as `params`.
 #' @param show_code Logical; if `TRUE`, include source code blocks. Defaults to `FALSE`.
 #' @param labels A label object created with [report_labels()]. Defaults to
 #'   English `Table` / `Figure` labels.
@@ -33,6 +37,7 @@
 render_analysis_md <- function(script,
                                output_dir = "outputs",
                                report_name = NULL,
+                               params = list(),
                                show_code = FALSE,
                                labels = report_labels()) {
   stopifnot(file.exists(script))
@@ -42,6 +47,7 @@ render_analysis_md <- function(script,
     is.null(report_name) ||
       (is.character(report_name) && length(report_name) == 1 && nzchar(report_name))
   )
+  validate_render_params(params)
   stopifnot(is.logical(show_code), length(show_code) == 1, !is.na(show_code))
   validate_report_labels(labels)
 
@@ -72,13 +78,13 @@ render_analysis_md <- function(script,
   state$labels <- labels
 
   envir <- new.env(parent = globalenv())
+  list2env(params, envir = envir)
+  envir$params <- params
   envir$.birtir_state <- state
   envir$md_table <- md_table
   envir$md_plot <- md_plot
-  envir$text_md <- function(text) {
-    add_md_line(state, text)
-    invisible(NULL)
-  }
+  envir$md_text <- md_text
+  envir$text_md <- md_text
 
   birtir_set_render_state(state)
   on.exit(birtir_clear_render_state(), add = TRUE)
@@ -114,6 +120,42 @@ render_analysis_md <- function(script,
 
   writeLines(state$md, md_path)
   invisible(md_path)
+}
+
+validate_render_params <- function(params) {
+  if (!is.list(params)) {
+    stop("`params` must be a named list.", call. = FALSE)
+  }
+
+  if (length(params) == 0) {
+    return(invisible(params))
+  }
+
+  param_names <- names(params)
+
+  if (is.null(param_names) || anyNA(param_names) || any(!nzchar(param_names))) {
+    stop("`params` must be a named list.", call. = FALSE)
+  }
+
+  if (anyDuplicated(param_names)) {
+    stop("`params` names must be unique.", call. = FALSE)
+  }
+
+  reserved_names <- c(".birtir_state", "md_table", "md_plot", "md_text", "text_md", "params")
+  conflicting_names <- intersect(param_names, reserved_names)
+
+  if (length(conflicting_names) > 0) {
+    stop(
+      paste0(
+        "`params` cannot use reserved names: ",
+        paste(conflicting_names, collapse = ", "),
+        "."
+      ),
+      call. = FALSE
+    )
+  }
+
+  invisible(params)
 }
 
 birtir_runtime <- new.env(parent = emptyenv())
@@ -288,6 +330,120 @@ md_plot <- function(plot, caption = NULL, filename = NULL,
     height = height,
     dpi = dpi
   ))
+}
+
+#' Format inline Markdown text with glue interpolation
+#'
+#' `md_text()` formats inline text with [glue::glue()] and applies lightweight
+#' number formatting to values injected with `{...}` expressions.
+#'
+#' When called inside [render_analysis_md()], the formatted text is appended to
+#' the active report as Markdown. Outside rendering, the text is printed as a
+#' console preview and returned invisibly.
+#'
+#' @param text A glue-compatible character string.
+#' @param ... Additional values passed to [glue::glue()].
+#' @param digits Number of decimal places for numeric values. Defaults to `2`.
+#' @param style Number formatting style. Use `"apa"` to suppress leading zeros
+#'   for values between `-1` and `1`, or `"plain"` to keep standard decimals.
+#' @param trailing_zeros Logical; if `TRUE`, keep a fixed number of decimals.
+#'   Defaults to `TRUE`.
+#' @param .envir Environment used to evaluate glue expressions. Defaults to the
+#'   caller environment.
+#'
+#' @return Invisibly returns the formatted Markdown text.
+#' @export
+md_text <- function(text,
+                    ...,
+                    digits = 2,
+                    style = c("apa", "plain"),
+                    trailing_zeros = TRUE,
+                    .envir = parent.frame()) {
+  stopifnot(is.character(text), length(text) == 1)
+  stopifnot(is.numeric(digits), length(digits) == 1, !is.na(digits), digits >= 0)
+  stopifnot(is.logical(trailing_zeros), length(trailing_zeros) == 1, !is.na(trailing_zeros))
+
+  digits <- as.integer(digits)
+  style <- match.arg(style)
+
+  rendered <- glue::glue(
+    text,
+    ...,
+    .envir = .envir,
+    .transformer = function(expr, envir) {
+      value <- glue::identity_transformer(expr, envir)
+      format_md_text_value(
+        value = value,
+        digits = digits,
+        style = style,
+        trailing_zeros = trailing_zeros
+      )
+    }
+  )
+  rendered <- as.character(rendered)
+
+  state <- birtir_get_render_state()
+
+  if (is.null(state)) {
+    cat(rendered, "\n", sep = "")
+    return(invisible(rendered))
+  }
+
+  add_md_line(state, rendered)
+  add_md_line(state, "")
+
+  invisible(rendered)
+}
+
+format_md_text_value <- function(value, digits, style, trailing_zeros) {
+  if (length(value) == 0) {
+    return("")
+  }
+
+  if (length(value) > 1) {
+    return(paste(
+      vapply(
+        value,
+        format_md_text_value,
+        character(1),
+        digits = digits,
+        style = style,
+        trailing_zeros = trailing_zeros
+      ),
+      collapse = ", "
+    ))
+  }
+
+  if (is.numeric(value)) {
+    return(format_md_number(
+      value = value,
+      digits = digits,
+      style = style,
+      trailing_zeros = trailing_zeros
+    ))
+  }
+
+  as.character(value)
+}
+
+format_md_number <- function(value, digits, style, trailing_zeros) {
+  if (is.na(value)) {
+    return("NA")
+  }
+
+  rounded <- round(value, digits)
+
+  if (trailing_zeros) {
+    formatted <- formatC(rounded, format = "f", digits = digits)
+  } else {
+    formatted <- format(round(rounded, digits), nsmall = 0, trim = TRUE, scientific = FALSE)
+  }
+
+  if (identical(style, "apa") && abs(rounded) < 1 && !identical(rounded, 0)) {
+    formatted <- sub("^(-?)0\\.", "\\1.", formatted)
+  }
+
+  formatted
 }
 
 parse_analysis_blocks <- function(lines, script = NULL) {
