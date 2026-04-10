@@ -8,6 +8,7 @@ render_analysis_md(
   script,
   output_dir = "outputs",
   report_name = NULL,
+  params = list(),
   show_code = FALSE,
   labels = report_labels()
 )
@@ -19,6 +20,10 @@ render_analysis_md(
 
 \item{report_name}{Optional output/report name. Defaults to the script file
 name without extension.}
+
+\item{params}{Optional named list of values exposed inside the script
+environment. Each entry is available by name, and the full list is also
+available as \code{params}.}
 
 \item{show_code}{Logical; if \code{TRUE}, include source code blocks. Defaults to \code{FALSE}.}
 
@@ -47,6 +52,7 @@ It may also call helper functions:
 \itemize{
 \item \code{md_table()}
 \item \code{md_plot()}
+\item \code{md_text()}
 }
 
 \code{birtir} currently assumes one render at a time in a normal interactive

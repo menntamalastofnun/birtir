@@ -108,6 +108,33 @@ test_that("render_analysis_md supports a custom report name", {
   expect_true(file.exists(file.path(script_dir, "file01", "file01.md")))
 })
 
+test_that("render_analysis_md exposes params inside the script", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "item_analysis_template.R")
+
+  writeLines(
+    c(
+      "#| h1: Param example",
+      "id",
+      "params$id",
+      "md_table(data.frame(id = id), caption = paste('Report for', id))"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(
+    script_path,
+    output_dir = script_dir,
+    report_name = "file01",
+    params = list(id = "LES_04_A1")
+  )
+
+  md_lines <- readLines(output_path, warn = FALSE)
+
+  expect_true(any(grepl("^\\[1\\] \"LES_04_A1\"$", md_lines)))
+  expect_true(any(grepl("^\\*\\*Table 1\\. Report for LES_04_A1\\*\\*$", md_lines)))
+})
+
 test_that("md_table prints a markdown preview outside render mode", {
   output <- capture.output(
     result <- md_table(
@@ -128,6 +155,51 @@ test_that("md_plot returns the plot object outside render mode", {
   result <- md_plot(plot)
 
   expect_s3_class(result, "ggplot")
+})
+
+test_that("md_text formats inline numeric values outside render mode", {
+  output <- capture.output(
+    result <- md_text("This is _R_ = {0.1234} and _M_ = {2.5}", digits = 2)
+  )
+
+  expect_identical(result, "This is _R_ = .12 and _M_ = 2.50")
+  expect_identical(output, "This is _R_ = .12 and _M_ = 2.50")
+})
+
+test_that("render_analysis_md supports md_text inside scripts", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "md_text_script.R")
+
+  writeLines(
+    c(
+      "#| h1: Inline text",
+      "x <- 0.4567",
+      "md_text('This is _R_ = {x}', digits = 2)"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(script_path, output_dir = script_dir)
+  md_lines <- readLines(output_path, warn = FALSE)
+
+  expect_true(any(grepl("^# Inline text$", md_lines)))
+  expect_true(any(grepl("^This is _R_ = \\.46$", md_lines)))
+})
+
+test_that("render_analysis_md reserves the md_text helper name", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "reserved_md_text.R")
+
+  writeLines("42", script_path)
+
+  expect_error(
+    render_analysis_md(
+      script_path,
+      output_dir = script_dir,
+      params = list(md_text = "conflict")
+    ),
+    "reserved names: md_text"
+  )
 })
 
 test_that("render_analysis_md keeps code blocks intact across blank lines", {
