@@ -410,3 +410,120 @@ test_that("legacy helpers emit deprecation warnings", {
     "deprecated"
   )
 })
+
+test_that("convert_md rejects non-markdown input", {
+  input_dir <- withr::local_tempdir()
+  txt_path <- file.path(input_dir, "report.txt")
+  writeLines("hello", txt_path)
+
+  expect_error(
+    convert_md(txt_path),
+    "`path` must point to an existing `.md` file."
+  )
+})
+
+test_that("convert_md errors clearly when pandoc is unavailable", {
+  input_dir <- withr::local_tempdir()
+  md_path <- file.path(input_dir, "report.md")
+  writeLines("# Hello", md_path)
+
+  local_mocked_bindings(
+    birtir_find_pandoc = function() "",
+    .package = "birtir"
+  )
+
+  expect_error(
+    convert_md(md_path),
+    "Pandoc is required for `convert_md\\(\\)` but was not found on this system."
+  )
+})
+
+test_that("convert_md calls pandoc and returns the output path", {
+  input_dir <- withr::local_tempdir()
+  md_path <- file.path(input_dir, "report.md")
+  writeLines("# Hello", md_path)
+
+  call_args <- NULL
+
+  local_mocked_bindings(
+    birtir_find_pandoc = function() "C:/Pandoc/pandoc.exe",
+    birtir_run_pandoc = function(pandoc, input, output, workdir) {
+      call_args <<- list(pandoc = pandoc, input = input, output = output, workdir = workdir)
+      0L
+    },
+    .package = "birtir"
+  )
+
+  output_path <- convert_md(md_path, to = "docx")
+  expected_output <- gsub("\\\\", "/", file.path(input_dir, "report.docx"))
+
+  expect_identical(as.character(output_path), expected_output)
+  expect_identical(call_args$pandoc, "C:/Pandoc/pandoc.exe")
+  expect_identical(call_args$input, "report.md")
+  expect_identical(as.character(call_args$output), expected_output)
+  expect_identical(call_args$workdir, gsub("\\\\", "/", input_dir))
+})
+
+test_that("convert_md resolves relative assets from the markdown directory", {
+  input_dir <- withr::local_tempdir()
+  md_path <- file.path(input_dir, "report.md")
+  image_dir <- file.path(input_dir, "images")
+  image_path <- file.path(image_dir, "plot.png")
+
+  dir.create(image_dir)
+  writeLines("![](images/plot.png)", md_path)
+  writeBin(as.raw(c(137, 80, 78, 71)), image_path)
+
+  call_args <- NULL
+
+  local_mocked_bindings(
+    birtir_find_pandoc = function() "C:/Pandoc/pandoc.exe",
+    birtir_run_pandoc = function(pandoc, input, output, workdir) {
+      call_args <<- list(pandoc = pandoc, input = input, output = output, workdir = workdir)
+      0L
+    },
+    .package = "birtir"
+  )
+
+  convert_md(md_path, to = "html")
+
+  expect_identical(call_args$input, "report.md")
+  expect_identical(call_args$workdir, gsub("\\\\", "/", input_dir))
+})
+
+test_that("convert_md strips redundant table-file links only in the temporary export copy", {
+  input_dir <- withr::local_tempdir()
+  md_path <- file.path(input_dir, "report.md")
+  original_lines <- c(
+    "**Tafla 4. Meðaltöl og staðalfrávik eftir stærð fjölliðu - ALG**",
+    "",
+    "[Table: 02-presmooth-grade-10-stf-10-a1_tbl-004.md](tables/02-presmooth-grade-10-stf-10-a1_tbl-004.md)",
+    "",
+    "|col|value|",
+    "|---|---|",
+    "|x|1|"
+  )
+  writeLines(original_lines, md_path)
+
+  call_args <- NULL
+  temp_lines <- NULL
+
+  local_mocked_bindings(
+    birtir_find_pandoc = function() "C:/Pandoc/pandoc.exe",
+    birtir_run_pandoc = function(pandoc, input, output, workdir) {
+      call_args <<- list(pandoc = pandoc, input = input, output = output, workdir = workdir)
+      temp_lines <<- readLines(file.path(workdir, input), warn = FALSE)
+      0L
+    },
+    .package = "birtir"
+  )
+
+  convert_md(md_path, to = "html")
+
+  expect_false(any(grepl("^\\[Table:", temp_lines)))
+  expect_true(any(grepl("^\\*\\*Tafla 4\\.", temp_lines)))
+  expect_true(any(grepl("^\\|col\\|value\\|$", temp_lines)))
+  expect_identical(readLines(md_path, warn = FALSE), original_lines)
+  expect_false(identical(call_args$input, "report.md"))
+  expect_true(grepl("^report-convert-.*\\.md$", call_args$input))
+})

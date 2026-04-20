@@ -178,6 +178,7 @@ Outside `render_analysis_md()`:
 - `birtir::md_text()` prints Markdown-ready inline text with glue formatting
 - `birtir::fmt_num()` returns formatted numbers for inline reporting
 - `birtir::fmt_p()` returns APA-style p-value strings such as `= .023` or `< .001`
+- `birtir::convert_md()` converts an existing `.md` file with Pandoc
 
 ## Custom labels
 
@@ -205,6 +206,19 @@ report_labels_is <- function() {
   )
 }
 ```
+
+## Convert Markdown
+
+Use `convert_md()` as a secondary step when you want to convert a rendered
+Markdown report to another file format with Pandoc:
+
+``` r
+md_path <- birtir::render_analysis_md("scripts/regression_example.R")
+birtir::convert_md(md_path, to = "docx")
+```
+
+`convert_md()` only accepts `.md` input and will fail clearly if Pandoc is not
+installed or not available on `PATH`.
 
 ## Current limitations
 
