@@ -108,6 +108,54 @@ test_that("render_analysis_md supports a custom report name", {
   expect_true(file.exists(file.path(script_dir, "file01", "file01.md")))
 })
 
+test_that("render_analysis_md supports book layout with shared assets", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "book_layout.R")
+
+  writeLines(
+    c(
+      "#| h1: Book layout",
+      "tbl <- data.frame(term = 'x', value = 2)",
+      "birtir::md_table(tbl, caption = 'Shared table')",
+      "",
+      "library(ggplot2)",
+      "p <- ggplot(mtcars, aes(wt, mpg)) + geom_point()",
+      "birtir::md_plot(p, caption = 'Shared plot')"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(
+    script_path,
+    output_dir = script_dir,
+    layout = "book"
+  )
+  md_lines <- readLines(output_path, warn = FALSE)
+
+  expect_identical(normalizePath(dirname(output_path), winslash = "/"), normalizePath(script_dir, winslash = "/"))
+  expect_true(file.exists(file.path(script_dir, "book-layout.md")))
+  expect_true(file.exists(file.path(script_dir, "tables", "book-layout_tbl-001.md")))
+  expect_true(file.exists(file.path(script_dir, "images", "book-layout_fig-001.png")))
+  expect_false(dir.exists(file.path(script_dir, "book-layout")))
+  expect_true(any(grepl("^\\[Table: book-layout_tbl-001\\.md\\]\\(tables/book-layout_tbl-001\\.md\\)$", md_lines)))
+  expect_true(any(grepl("^!\\[\\]\\(images/book-layout_fig-001\\.png\\)$", md_lines)))
+})
+
+test_that("render_analysis_md defaults to report layout", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "default_layout.R")
+
+  writeLines("1 + 1", script_path)
+
+  output_path <- render_analysis_md(script_path, output_dir = script_dir)
+
+  expect_identical(
+    normalizePath(dirname(output_path), winslash = "/"),
+    normalizePath(file.path(script_dir, "default-layout"), winslash = "/")
+  )
+  expect_true(file.exists(file.path(script_dir, "default-layout", "default-layout.md")))
+})
+
 test_that("render_analysis_md exposes params inside the script", {
   script_dir <- withr::local_tempdir()
   script_path <- file.path(script_dir, "item_analysis_template.R")
@@ -149,12 +197,33 @@ test_that("md_table prints a markdown preview outside render mode", {
 })
 
 test_that("md_plot returns the plot object outside render mode", {
+  withr::local_dir(withr::local_tempdir())
+
   plot <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
     ggplot2::geom_point()
 
   result <- md_plot(plot)
 
   expect_s3_class(result, "ggplot")
+})
+
+test_that("fmt_num formats numbers for inline reporting", {
+  expect_identical(fmt_num(c(0.1234, 2.5), digits = 2), c(".12", "2.50"))
+  expect_identical(
+    fmt_num(0.1234, digits = 2, drop_leading_zero = FALSE),
+    "0.12"
+  )
+  expect_identical(
+    fmt_num(c(0.1234, 2.5), digits = 2, decimal_mark = ","),
+    c(",12", "2,50")
+  )
+})
+
+test_that("fmt_p formats p-values for inline reporting", {
+  expect_identical(fmt_p(0.0004), "< .001")
+  expect_identical(fmt_p(0.0234), "= .023")
+  expect_identical(fmt_p(0.0234, drop_leading_zero = FALSE), "= 0.023")
+  expect_identical(fmt_p(0.0234, decimal_mark = ","), "= ,023")
 })
 
 test_that("md_text formats inline numeric values outside render mode", {
@@ -164,6 +233,24 @@ test_that("md_text formats inline numeric values outside render mode", {
 
   expect_identical(result, "This is _R_ = .12 and _M_ = 2.50")
   expect_identical(output, "This is _R_ = .12 and _M_ = 2.50")
+})
+
+test_that("md_text can keep the leading zero when requested", {
+  result <- md_text(
+    "This is _R_ = {0.1234}",
+    digits = 2,
+    drop_leading_zero = FALSE
+  )
+
+  expect_identical(result, "This is _R_ = 0.12")
+})
+
+test_that("md_text formats p-values in APA style", {
+  result_small <- md_text("p {0.0004}", style = "p", digits = 3)
+  result_large <- md_text("p {0.0234}", style = "p", digits = 3)
+
+  expect_identical(result_small, "p < .001")
+  expect_identical(result_large, "p = .023")
 })
 
 test_that("render_analysis_md supports md_text inside scripts", {
@@ -184,6 +271,32 @@ test_that("render_analysis_md supports md_text inside scripts", {
 
   expect_true(any(grepl("^# Inline text$", md_lines)))
   expect_true(any(grepl("^This is _R_ = \\.46$", md_lines)))
+})
+
+test_that("render_analysis_md can set decimal_mark globally for md_text", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "md_text_comma.R")
+
+  writeLines(
+    c(
+      "#| h1: Inline text",
+      "x <- 0.4567",
+      "p <- 0.0234",
+      "md_text('p {p}', style = 'p', digits = 3)",
+      "md_text('Estimate = {x}', digits = 2)"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(
+    script_path,
+    output_dir = script_dir,
+    decimal_mark = ","
+  )
+  md_lines <- readLines(output_path, warn = FALSE)
+
+  expect_true(any(grepl("^p = ,023$", md_lines)))
+  expect_true(any(grepl("^Estimate = ,46$", md_lines)))
 })
 
 test_that("render_analysis_md reserves the md_text helper name", {

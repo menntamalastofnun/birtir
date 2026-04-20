@@ -9,6 +9,8 @@ render_analysis_md(
   output_dir = "outputs",
   report_name = NULL,
   params = list(),
+  layout = c("report", "book"),
+  decimal_mark = ".",
   show_code = FALSE,
   labels = report_labels()
 )
@@ -24,6 +26,13 @@ name without extension.}
 \item{params}{Optional named list of values exposed inside the script
 environment. Each entry is available by name, and the full list is also
 available as \code{params}.}
+
+\item{layout}{Output layout. Use \code{"report"} for a standalone report folder
+under \code{output_dir}, or \code{"book"} to write the markdown file into
+\code{output_dir} and place assets in shared \verb{images/} and \verb{tables/} folders.}
+
+\item{decimal_mark}{Decimal separator used by inline formatting helpers
+during rendering. Use \code{"."} or \code{","}. Defaults to \code{"."}.}
 
 \item{show_code}{Logical; if \code{TRUE}, include source code blocks. Defaults to \code{FALSE}.}
 
