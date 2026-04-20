@@ -84,14 +84,16 @@ birtir_find_pandoc <- function() {
 }
 
 birtir_run_pandoc <- function(pandoc, input, output, workdir) {
+  old_wd <- setwd(workdir)
+  on.exit(setwd(old_wd), add = TRUE)
+
   system2(
     command = pandoc,
     args = c(
       shQuote(input),
       "-o",
       shQuote(output)
-    ),
-    wd = workdir
+    )
   )
 }
 
