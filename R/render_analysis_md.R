@@ -114,18 +114,21 @@ render_analysis_md <- function(script,
       next
     }
 
-    result <- evaluate_analysis_block(
-      block$lines,
-      envir = envir,
-      script = script
-    )
+    code <- paste(block$lines, collapse = "\n")
 
-    if (show_code && nzchar(trimws(result$code))) {
+    if (show_code && nzchar(trimws(code))) {
       add_md_line(state, "```r")
-      add_md_line(state, result$code)
+      add_md_line(state, code)
       add_md_line(state, "```")
       add_md_line(state, "")
     }
+
+    result <- evaluate_analysis_block(
+      block$lines,
+      envir = envir,
+      script = script,
+      state = state
+    )
 
     add_md_text_block(state, result$lines)
 
@@ -854,7 +857,7 @@ draw_md_plot <- function(plot) {
   invisible(NULL)
 }
 
-evaluate_analysis_block <- function(lines, envir, script) {
+evaluate_analysis_block <- function(lines, envir, script, state = NULL) {
   code <- paste(lines, collapse = "\n")
   srcfile <- srcfilecopy(script, lines)
 
@@ -883,7 +886,12 @@ evaluate_analysis_block <- function(lines, envir, script) {
       script = script,
       srcref = srcrefs[[i]]
     )
-    output_lines <- c(output_lines, result$lines)
+
+    if (is.null(state)) {
+      output_lines <- c(output_lines, result$lines)
+    } else {
+      add_md_text_block(state, result$lines)
+    }
 
     if (!is.null(result$error)) {
       return(list(code = code, lines = output_lines, error = result$error))

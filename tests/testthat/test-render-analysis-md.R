@@ -54,6 +54,31 @@ test_that("render_analysis_md supports namespaced helper usage inside scripts", 
   expect_true(file.exists(file.path(report_dir, "images", "namespaced-helpers_fig-001.png")))
 })
 
+test_that("render_analysis_md keeps helper output in script order", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "script_order.R")
+
+  writeLines(
+    c(
+      "data <- data.frame(score = c(1, 2, 3))",
+      "summary(data)",
+      "md_table(data, caption = 'Scores')",
+      "'after table'"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(script_path, output_dir = script_dir)
+  md_lines <- readLines(output_path, warn = FALSE)
+
+  summary_line <- grep("Min\\.", md_lines)[[1]]
+  table_line <- grep("^\\*\\*Table 1\\. Scores\\*\\*$", md_lines)[[1]]
+  after_line <- grep("^\\[1\\] \"after table\"$", md_lines)[[1]]
+
+  expect_lt(summary_line, table_line)
+  expect_lt(table_line, after_line)
+})
+
 test_that("render_analysis_md uses custom report labels", {
   script_dir <- withr::local_tempdir()
   script_path <- file.path(script_dir, "custom_labels.R")
