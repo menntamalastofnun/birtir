@@ -108,6 +108,54 @@ test_that("render_analysis_md supports a custom report name", {
   expect_true(file.exists(file.path(script_dir, "file01", "file01.md")))
 })
 
+test_that("render_analysis_md supports book layout with shared assets", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "book_layout.R")
+
+  writeLines(
+    c(
+      "#| h1: Book layout",
+      "tbl <- data.frame(term = 'x', value = 2)",
+      "birtir::md_table(tbl, caption = 'Shared table')",
+      "",
+      "library(ggplot2)",
+      "p <- ggplot(mtcars, aes(wt, mpg)) + geom_point()",
+      "birtir::md_plot(p, caption = 'Shared plot')"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(
+    script_path,
+    output_dir = script_dir,
+    layout = "book"
+  )
+  md_lines <- readLines(output_path, warn = FALSE)
+
+  expect_identical(normalizePath(dirname(output_path), winslash = "/"), normalizePath(script_dir, winslash = "/"))
+  expect_true(file.exists(file.path(script_dir, "book-layout.md")))
+  expect_true(file.exists(file.path(script_dir, "tables", "book-layout_tbl-001.md")))
+  expect_true(file.exists(file.path(script_dir, "images", "book-layout_fig-001.png")))
+  expect_false(dir.exists(file.path(script_dir, "book-layout")))
+  expect_true(any(grepl("^\\[Table: book-layout_tbl-001\\.md\\]\\(tables/book-layout_tbl-001\\.md\\)$", md_lines)))
+  expect_true(any(grepl("^!\\[\\]\\(images/book-layout_fig-001\\.png\\)$", md_lines)))
+})
+
+test_that("render_analysis_md defaults to report layout", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "default_layout.R")
+
+  writeLines("1 + 1", script_path)
+
+  output_path <- render_analysis_md(script_path, output_dir = script_dir)
+
+  expect_identical(
+    normalizePath(dirname(output_path), winslash = "/"),
+    normalizePath(file.path(script_dir, "default-layout"), winslash = "/")
+  )
+  expect_true(file.exists(file.path(script_dir, "default-layout", "default-layout.md")))
+})
+
 test_that("render_analysis_md exposes params inside the script", {
   script_dir <- withr::local_tempdir()
   script_path <- file.path(script_dir, "item_analysis_template.R")
@@ -149,12 +197,93 @@ test_that("md_table prints a markdown preview outside render mode", {
 })
 
 test_that("md_plot returns the plot object outside render mode", {
+  withr::local_dir(withr::local_tempdir())
+
   plot <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
     ggplot2::geom_point()
 
   result <- md_plot(plot)
 
   expect_s3_class(result, "ggplot")
+})
+
+test_that("md_plot saves non-ggplot plot objects during rendering", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "custom-plot.R")
+
+  writeLines(
+    c(
+      "print.qgraph_mock <- function(x, ...) {",
+      "  plot(1:3, c(3, 1, 2), type = 'b')",
+      "}",
+      "",
+      "p <- structure(list(), class = 'qgraph_mock')",
+      "birtir::md_plot(p, caption = 'Custom plot')"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(script_path, output_dir = script_dir)
+  md_lines <- readLines(output_path, warn = FALSE)
+
+  expect_true(any(grepl("^\\*\\*Figure 1\\. Custom plot\\*\\*$", md_lines)))
+  expect_true(file.exists(file.path(dirname(output_path), "images", "custom-plot_fig-001.png")))
+})
+
+test_that("md_plot redraws qgraph objects with plot.qgraph during rendering", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "qgraph-plot.R")
+  marker_path <- file.path(script_dir, "qgraph-method.txt")
+  marker_path_script <- gsub("\\\\", "/", marker_path)
+
+  writeLines(
+    c(
+      "assign('plot.qgraph', function(x, ...) {",
+      "  stopifnot(isTRUE(x$plotOptions$plot))",
+      "  stopifnot(identical(x$plotOptions$filetype, 'default'))",
+      paste0("  writeLines('plot', '", marker_path_script, "')"),
+      "  plot.new()",
+      "  rect(0.2, 0.2, 0.8, 0.8, col = 'black')",
+      "}, envir = .GlobalEnv)",
+      "",
+      "assign('print.qgraph', function(x, ...) {",
+      paste0("  writeLines('print', '", marker_path_script, "')"),
+      "}, envir = .GlobalEnv)",
+      "",
+      "p <- structure(",
+      "  list(plotOptions = list(plot = FALSE, filetype = 'png')),",
+      "  class = 'qgraph'",
+      ")",
+      "birtir::md_plot(p, caption = 'Network plot')"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(script_path, output_dir = script_dir)
+  md_lines <- readLines(output_path, warn = FALSE)
+
+  expect_true(any(grepl("^\\*\\*Figure 1\\. Network plot\\*\\*$", md_lines)))
+  expect_true(file.exists(file.path(dirname(output_path), "images", "qgraph-plot_fig-001.png")))
+  expect_identical(readLines(marker_path, warn = FALSE), "plot")
+})
+
+test_that("fmt_num formats numbers for inline reporting", {
+  expect_identical(fmt_num(c(0.1234, 2.5), digits = 2), c(".12", "2.50"))
+  expect_identical(
+    fmt_num(0.1234, digits = 2, drop_leading_zero = FALSE),
+    "0.12"
+  )
+  expect_identical(
+    fmt_num(c(0.1234, 2.5), digits = 2, decimal_mark = ","),
+    c(",12", "2,50")
+  )
+})
+
+test_that("fmt_p formats p-values for inline reporting", {
+  expect_identical(fmt_p(0.0004), "< .001")
+  expect_identical(fmt_p(0.0234), "= .023")
+  expect_identical(fmt_p(0.0234, drop_leading_zero = FALSE), "= 0.023")
+  expect_identical(fmt_p(0.0234, decimal_mark = ","), "= ,023")
 })
 
 test_that("md_text formats inline numeric values outside render mode", {
@@ -164,6 +293,24 @@ test_that("md_text formats inline numeric values outside render mode", {
 
   expect_identical(result, "This is _R_ = .12 and _M_ = 2.50")
   expect_identical(output, "This is _R_ = .12 and _M_ = 2.50")
+})
+
+test_that("md_text can keep the leading zero when requested", {
+  result <- md_text(
+    "This is _R_ = {0.1234}",
+    digits = 2,
+    drop_leading_zero = FALSE
+  )
+
+  expect_identical(result, "This is _R_ = 0.12")
+})
+
+test_that("md_text formats p-values in APA style", {
+  result_small <- md_text("p {0.0004}", style = "p", digits = 3)
+  result_large <- md_text("p {0.0234}", style = "p", digits = 3)
+
+  expect_identical(result_small, "p < .001")
+  expect_identical(result_large, "p = .023")
 })
 
 test_that("render_analysis_md supports md_text inside scripts", {
@@ -184,6 +331,32 @@ test_that("render_analysis_md supports md_text inside scripts", {
 
   expect_true(any(grepl("^# Inline text$", md_lines)))
   expect_true(any(grepl("^This is _R_ = \\.46$", md_lines)))
+})
+
+test_that("render_analysis_md can set decimal_mark globally for md_text", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "md_text_comma.R")
+
+  writeLines(
+    c(
+      "#| h1: Inline text",
+      "x <- 0.4567",
+      "p <- 0.0234",
+      "md_text('p {p}', style = 'p', digits = 3)",
+      "md_text('Estimate = {x}', digits = 2)"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(
+    script_path,
+    output_dir = script_dir,
+    decimal_mark = ","
+  )
+  md_lines <- readLines(output_path, warn = FALSE)
+
+  expect_true(any(grepl("^p = ,023$", md_lines)))
+  expect_true(any(grepl("^Estimate = ,46$", md_lines)))
 })
 
 test_that("render_analysis_md reserves the md_text helper name", {
@@ -296,4 +469,121 @@ test_that("legacy helpers emit deprecation warnings", {
     fa_heildartolu(),
     "deprecated"
   )
+})
+
+test_that("convert_md rejects non-markdown input", {
+  input_dir <- withr::local_tempdir()
+  txt_path <- file.path(input_dir, "report.txt")
+  writeLines("hello", txt_path)
+
+  expect_error(
+    convert_md(txt_path),
+    "`path` must point to an existing `.md` file."
+  )
+})
+
+test_that("convert_md errors clearly when pandoc is unavailable", {
+  input_dir <- withr::local_tempdir()
+  md_path <- file.path(input_dir, "report.md")
+  writeLines("# Hello", md_path)
+
+  local_mocked_bindings(
+    birtir_find_pandoc = function() "",
+    .package = "birtir"
+  )
+
+  expect_error(
+    convert_md(md_path),
+    "Pandoc is required for `convert_md\\(\\)` but was not found on this system."
+  )
+})
+
+test_that("convert_md calls pandoc and returns the output path", {
+  input_dir <- withr::local_tempdir()
+  md_path <- file.path(input_dir, "report.md")
+  writeLines("# Hello", md_path)
+
+  call_args <- NULL
+
+  local_mocked_bindings(
+    birtir_find_pandoc = function() "C:/Pandoc/pandoc.exe",
+    birtir_run_pandoc = function(pandoc, input, output, workdir) {
+      call_args <<- list(pandoc = pandoc, input = input, output = output, workdir = workdir)
+      0L
+    },
+    .package = "birtir"
+  )
+
+  output_path <- convert_md(md_path, to = "docx")
+  expected_output <- gsub("\\\\", "/", file.path(input_dir, "report.docx"))
+
+  expect_identical(as.character(output_path), expected_output)
+  expect_identical(call_args$pandoc, "C:/Pandoc/pandoc.exe")
+  expect_identical(call_args$input, "report.md")
+  expect_identical(as.character(call_args$output), expected_output)
+  expect_identical(call_args$workdir, gsub("\\\\", "/", input_dir))
+})
+
+test_that("convert_md resolves relative assets from the markdown directory", {
+  input_dir <- withr::local_tempdir()
+  md_path <- file.path(input_dir, "report.md")
+  image_dir <- file.path(input_dir, "images")
+  image_path <- file.path(image_dir, "plot.png")
+
+  dir.create(image_dir)
+  writeLines("![](images/plot.png)", md_path)
+  writeBin(as.raw(c(137, 80, 78, 71)), image_path)
+
+  call_args <- NULL
+
+  local_mocked_bindings(
+    birtir_find_pandoc = function() "C:/Pandoc/pandoc.exe",
+    birtir_run_pandoc = function(pandoc, input, output, workdir) {
+      call_args <<- list(pandoc = pandoc, input = input, output = output, workdir = workdir)
+      0L
+    },
+    .package = "birtir"
+  )
+
+  convert_md(md_path, to = "html")
+
+  expect_identical(call_args$input, "report.md")
+  expect_identical(call_args$workdir, gsub("\\\\", "/", input_dir))
+})
+
+test_that("convert_md strips redundant table-file links only in the temporary export copy", {
+  input_dir <- withr::local_tempdir()
+  md_path <- file.path(input_dir, "report.md")
+  original_lines <- c(
+    "**Tafla 4. Meðaltöl og staðalfrávik eftir stærð fjölliðu - ALG**",
+    "",
+    "[Table: 02-presmooth-grade-10-stf-10-a1_tbl-004.md](tables/02-presmooth-grade-10-stf-10-a1_tbl-004.md)",
+    "",
+    "|col|value|",
+    "|---|---|",
+    "|x|1|"
+  )
+  writeLines(original_lines, md_path)
+
+  call_args <- NULL
+  temp_lines <- NULL
+
+  local_mocked_bindings(
+    birtir_find_pandoc = function() "C:/Pandoc/pandoc.exe",
+    birtir_run_pandoc = function(pandoc, input, output, workdir) {
+      call_args <<- list(pandoc = pandoc, input = input, output = output, workdir = workdir)
+      temp_lines <<- readLines(file.path(workdir, input), warn = FALSE)
+      0L
+    },
+    .package = "birtir"
+  )
+
+  convert_md(md_path, to = "html")
+
+  expect_false(any(grepl("^\\[Table:", temp_lines)))
+  expect_true(any(grepl("^\\*\\*Tafla 4\\.", temp_lines)))
+  expect_true(any(grepl("^\\|col\\|value\\|$", temp_lines)))
+  expect_identical(readLines(md_path, warn = FALSE), original_lines)
+  expect_false(identical(call_args$input, "report.md"))
+  expect_true(grepl("^report-convert-.*\\.md$", call_args$input))
 })

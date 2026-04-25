@@ -81,6 +81,28 @@ outputs/
 If `report_name` is omitted, `birtir` uses the script file name without
 the extension.
 
+Use `layout = "book"` when multiple rendered reports should share one
+output root:
+
+``` r
+birtir::render_analysis_md(
+  script = "scripts/regression_example.R",
+  report_name = "regression-mtcars",
+  layout = "book"
+)
+```
+
+This creates:
+
+``` text
+outputs/
+  regression-mtcars.md
+  images/
+    regression-mtcars_fig-001.png
+  tables/
+    regression-mtcars_tbl-001.md
+```
+
 ## Template workflows
 
 `report_name` and `params` are especially useful when rendering one
@@ -144,12 +166,19 @@ The same helpers also work outside rendering:
 ``` r
 coef_tbl |> birtir::md_table(caption = "Coefficient table", digits = 3)
 birtir::md_plot(p, caption = "MPG vs weight")
+birtir::md_text("Model fit: _R_ = {0.4567}, p {0.0234}", style = "apa", digits = 2)
+birtir::fmt_num(c(0.4567, 2.5), digits = 2)
+birtir::fmt_p(c(0.0234, 0.0004))
 ```
 
 Outside `render_analysis_md()`:
 
 - `birtir::md_table()` prints a pipe-table Markdown preview
 - `birtir::md_plot()` prints the ggplot normally
+- `birtir::md_text()` prints Markdown-ready inline text with glue formatting
+- `birtir::fmt_num()` returns formatted numbers for inline reporting
+- `birtir::fmt_p()` returns APA-style p-value strings such as `= .023` or `< .001`
+- `birtir::convert_md()` converts an existing `.md` file with Pandoc
 
 ## Custom labels
 
@@ -178,6 +207,19 @@ report_labels_is <- function() {
 }
 ```
 
+## Convert Markdown
+
+Use `convert_md()` as a secondary step when you want to convert a rendered
+Markdown report to another file format with Pandoc:
+
+``` r
+md_path <- birtir::render_analysis_md("scripts/regression_example.R")
+birtir::convert_md(md_path, to = "docx")
+```
+
+`convert_md()` only accepts `.md` input and will fail clearly if Pandoc is not
+installed or not available on `PATH`.
+
 ## Current limitations
 
 - `birtir` is currently designed for one render at a time in a normal
@@ -195,7 +237,7 @@ report_labels_is <- function() {
 - Output-first, not code-first
 - Minimal syntax in scripts
 - Explicit helpers for plots and tables
-- One report name to one report folder
+- Two layouts: standalone `"report"` or shared-assets `"book"`
 - One helper API for both manual work and report rendering
 
 ## Legacy workflow

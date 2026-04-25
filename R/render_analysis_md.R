@@ -23,6 +23,11 @@
 #' @param params Optional named list of values exposed inside the script
 #'   environment. Each entry is available by name, and the full list is also
 #'   available as `params`.
+#' @param layout Output layout. Use `"report"` for a standalone report folder
+#'   under `output_dir`, or `"book"` to write the markdown file into
+#'   `output_dir` and place assets in shared `images/` and `tables/` folders.
+#' @param decimal_mark Decimal separator used by inline formatting helpers
+#'   during rendering. Use `"."` or `","`. Defaults to `"."`.
 #' @param show_code Logical; if `TRUE`, include source code blocks. Defaults to `FALSE`.
 #' @param labels A label object created with [report_labels()]. Defaults to
 #'   English `Table` / `Figure` labels.
@@ -38,6 +43,8 @@ render_analysis_md <- function(script,
                                output_dir = "outputs",
                                report_name = NULL,
                                params = list(),
+                               layout = c("report", "book"),
+                               decimal_mark = ".",
                                show_code = FALSE,
                                labels = report_labels()) {
   stopifnot(file.exists(script))
@@ -48,6 +55,8 @@ render_analysis_md <- function(script,
       (is.character(report_name) && length(report_name) == 1 && nzchar(report_name))
   )
   validate_render_params(params)
+  layout <- match.arg(layout)
+  validate_decimal_mark(decimal_mark)
   stopifnot(is.logical(show_code), length(show_code) == 1, !is.na(show_code))
   validate_report_labels(labels)
 
@@ -55,10 +64,17 @@ render_analysis_md <- function(script,
   output_name <- if (is.null(report_name)) script_name else report_name
   safe_name <- sanitize_name(output_name)
 
-  report_dir <- fs::path(output_dir, safe_name)
-  images_dir <- fs::path(report_dir, "images")
-  tables_dir <- fs::path(report_dir, "tables")
-  md_path <- fs::path(report_dir, glue::glue("{safe_name}.md"))
+  if (identical(layout, "report")) {
+    report_dir <- fs::path(output_dir, safe_name)
+    images_dir <- fs::path(report_dir, "images")
+    tables_dir <- fs::path(report_dir, "tables")
+    md_path <- fs::path(report_dir, glue::glue("{safe_name}.md"))
+  } else {
+    report_dir <- output_dir
+    images_dir <- fs::path(output_dir, "images")
+    tables_dir <- fs::path(output_dir, "tables")
+    md_path <- fs::path(output_dir, glue::glue("{safe_name}.md"))
+  }
 
   fs::dir_create(report_dir, recurse = TRUE)
   fs::dir_create(images_dir, recurse = TRUE)
@@ -76,6 +92,7 @@ render_analysis_md <- function(script,
   state$script <- script
   state$safe_name <- safe_name
   state$labels <- labels
+  state$decimal_mark <- decimal_mark
 
   envir <- new.env(parent = globalenv())
   list2env(params, envir = envir)
@@ -297,7 +314,9 @@ md_table <- function(x, caption = NULL, filename = NULL, digits = NULL) {
 #' When called outside a render context, the plot is printed normally for
 #' interactive use.
 #'
-#' @param plot A ggplot object.
+#' @param plot A plot object. `ggplot` objects are saved with
+#'   [ggplot2::ggsave()]. Other supported plot objects are rendered on a PNG
+#'   device using their standard plotting methods.
 #' @param caption Optional caption text.
 #' @param filename Optional file stem used during rendering. The `.png`
 #'   extension is added automatically.
@@ -309,7 +328,7 @@ md_table <- function(x, caption = NULL, filename = NULL, digits = NULL) {
 #'   object outside rendering.
 #'
 #' @details
-#' `md_plot()` saves ggplot objects into the active report during rendering and
+#' `md_plot()` saves plot objects into the active report during rendering and
 #' behaves like a normal plot preview helper otherwise.
 #' @export
 md_plot <- function(plot, caption = NULL, filename = NULL,
@@ -317,7 +336,7 @@ md_plot <- function(plot, caption = NULL, filename = NULL,
   state <- birtir_get_render_state()
 
   if (is.null(state)) {
-    print(plot)
+    draw_md_plot(plot)
     return(invisible(plot))
   }
 
@@ -343,11 +362,8 @@ md_plot <- function(plot, caption = NULL, filename = NULL,
 #'
 #' @param text A glue-compatible character string.
 #' @param ... Additional values passed to [glue::glue()].
-#' @param digits Number of decimal places for numeric values. Defaults to `2`.
-#' @param style Number formatting style. Use `"apa"` to suppress leading zeros
-#'   for values between `-1` and `1`, or `"plain"` to keep standard decimals.
-#' @param trailing_zeros Logical; if `TRUE`, keep a fixed number of decimals.
-#'   Defaults to `TRUE`.
+#' @inheritParams fmt_num
+#' @inheritParams fmt_p
 #' @param .envir Environment used to evaluate glue expressions. Defaults to the
 #'   caller environment.
 #'
@@ -356,15 +372,27 @@ md_plot <- function(plot, caption = NULL, filename = NULL,
 md_text <- function(text,
                     ...,
                     digits = 2,
-                    style = c("apa", "plain"),
+                    style = c("apa", "plain", "p"),
+                    drop_leading_zero = TRUE,
                     trailing_zeros = TRUE,
+                    decimal_mark = NULL,
+                    p_threshold = 0.001,
                     .envir = parent.frame()) {
   stopifnot(is.character(text), length(text) == 1)
   stopifnot(is.numeric(digits), length(digits) == 1, !is.na(digits), digits >= 0)
+  stopifnot(is.logical(drop_leading_zero), length(drop_leading_zero) == 1, !is.na(drop_leading_zero))
   stopifnot(is.logical(trailing_zeros), length(trailing_zeros) == 1, !is.na(trailing_zeros))
+  stopifnot(
+    is.numeric(p_threshold),
+    length(p_threshold) == 1,
+    !is.na(p_threshold),
+    p_threshold > 0,
+    p_threshold < 1
+  )
 
   digits <- as.integer(digits)
   style <- match.arg(style)
+  decimal_mark <- resolve_decimal_mark(decimal_mark)
 
   rendered <- glue::glue(
     text,
@@ -376,7 +404,10 @@ md_text <- function(text,
         value = value,
         digits = digits,
         style = style,
-        trailing_zeros = trailing_zeros
+        drop_leading_zero = drop_leading_zero,
+        trailing_zeros = trailing_zeros,
+        decimal_mark = decimal_mark,
+        p_threshold = p_threshold
       )
     }
   )
@@ -395,7 +426,34 @@ md_text <- function(text,
   invisible(rendered)
 }
 
-format_md_text_value <- function(value, digits, style, trailing_zeros) {
+resolve_decimal_mark <- function(decimal_mark = NULL) {
+  if (is.null(decimal_mark)) {
+    state <- birtir_get_render_state()
+
+    if (!is.null(state) && !is.null(state$decimal_mark)) {
+      decimal_mark <- state$decimal_mark
+    } else {
+      decimal_mark <- "."
+    }
+  }
+
+  validate_decimal_mark(decimal_mark)
+  decimal_mark
+}
+
+validate_decimal_mark <- function(decimal_mark) {
+  stopifnot(
+    is.character(decimal_mark),
+    length(decimal_mark) == 1,
+    !is.na(decimal_mark),
+    decimal_mark %in% c(".", ",")
+  )
+
+  invisible(decimal_mark)
+}
+
+format_md_text_value <- function(value, digits, style, drop_leading_zero,
+                                 trailing_zeros, decimal_mark, p_threshold) {
   if (length(value) == 0) {
     return("")
   }
@@ -408,30 +466,150 @@ format_md_text_value <- function(value, digits, style, trailing_zeros) {
         character(1),
         digits = digits,
         style = style,
-        trailing_zeros = trailing_zeros
+        drop_leading_zero = drop_leading_zero,
+        trailing_zeros = trailing_zeros,
+        decimal_mark = decimal_mark,
+        p_threshold = p_threshold
       ),
       collapse = ", "
     ))
   }
 
   if (is.numeric(value)) {
-    return(format_md_number(
-      value = value,
+    return(format_md_value(
+      x = value,
       digits = digits,
       style = style,
-      trailing_zeros = trailing_zeros
+      drop_leading_zero = drop_leading_zero,
+      trailing_zeros = trailing_zeros,
+      decimal_mark = decimal_mark,
+      p_threshold = p_threshold
     ))
   }
 
   as.character(value)
 }
 
-format_md_number <- function(value, digits, style, trailing_zeros) {
-  if (is.na(value)) {
+#' Format numeric values for inline reporting
+#'
+#' `fmt_num()` formats numbers for inline text with support for APA-style
+#' leading-zero suppression.
+#'
+#' @param x Numeric vector to format.
+#' @param digits Number of decimal places. Defaults to `2`.
+#' @param style Number formatting style. Use `"apa"` for APA-style decimals or
+#'   `"plain"` for standard decimals.
+#' @param drop_leading_zero Logical; if `TRUE`, values between `-1` and `1`
+#'   are formatted without a leading zero. Defaults to `TRUE`.
+#' @param trailing_zeros Logical; if `TRUE`, keep a fixed number of decimals.
+#'   Defaults to `TRUE`.
+#' @param decimal_mark Decimal separator to use. Choose `"."` or `","`.
+#'   Defaults to `"."`.
+#'
+#' @return A character vector.
+#' @export
+fmt_num <- function(x,
+                    digits = 2,
+                    style = c("apa", "plain"),
+                    drop_leading_zero = TRUE,
+                    trailing_zeros = TRUE,
+                    decimal_mark = ".") {
+  stopifnot(is.numeric(x))
+  stopifnot(is.numeric(digits), length(digits) == 1, !is.na(digits), digits >= 0)
+  stopifnot(is.logical(drop_leading_zero), length(drop_leading_zero) == 1, !is.na(drop_leading_zero))
+  stopifnot(is.logical(trailing_zeros), length(trailing_zeros) == 1, !is.na(trailing_zeros))
+  validate_decimal_mark(decimal_mark)
+
+  digits <- as.integer(digits)
+  style <- match.arg(style)
+
+  vapply(
+    x,
+    format_one_number,
+    character(1),
+    digits = digits,
+    style = style,
+    drop_leading_zero = drop_leading_zero,
+    trailing_zeros = trailing_zeros,
+    decimal_mark = decimal_mark
+  )
+}
+
+#' Format p-values for inline reporting
+#'
+#' `fmt_p()` formats p-values as APA-style strings such as `= .023` or
+#' `< .001`.
+#'
+#' @param x Numeric vector of p-values.
+#' @param digits Number of decimal places. Defaults to `3`.
+#' @param drop_leading_zero Logical; if `TRUE`, values between `-1` and `1`
+#'   are formatted without a leading zero. Defaults to `TRUE`.
+#' @param decimal_mark Decimal separator to use. Choose `"."` or `","`.
+#'   Defaults to `"."`.
+#' @param p_threshold Lower display threshold. Values below this are shown as
+#'   `"< .001"` style text. Defaults to `.001`.
+#'
+#' @return A character vector.
+#' @export
+fmt_p <- function(x,
+                  digits = 3,
+                  drop_leading_zero = TRUE,
+                  decimal_mark = ".",
+                  p_threshold = 0.001) {
+  stopifnot(is.numeric(x))
+  stopifnot(is.numeric(digits), length(digits) == 1, !is.na(digits), digits >= 0)
+  stopifnot(is.logical(drop_leading_zero), length(drop_leading_zero) == 1, !is.na(drop_leading_zero))
+  validate_decimal_mark(decimal_mark)
+  stopifnot(
+    is.numeric(p_threshold),
+    length(p_threshold) == 1,
+    !is.na(p_threshold),
+    p_threshold > 0,
+    p_threshold < 1
+  )
+
+  digits <- as.integer(digits)
+
+  vapply(
+    x,
+    format_one_p_value,
+    character(1),
+    digits = digits,
+    drop_leading_zero = drop_leading_zero,
+    decimal_mark = decimal_mark,
+    threshold = p_threshold
+  )
+}
+
+format_md_value <- function(x, digits, style, drop_leading_zero,
+                            trailing_zeros, decimal_mark, p_threshold) {
+  if (identical(style, "p")) {
+    return(fmt_p(
+      x = x,
+      digits = digits,
+      drop_leading_zero = drop_leading_zero,
+      decimal_mark = decimal_mark,
+      p_threshold = p_threshold
+    ))
+  }
+
+  fmt_num(
+    x = x,
+    digits = digits,
+    style = style,
+    drop_leading_zero = drop_leading_zero,
+    trailing_zeros = trailing_zeros,
+    decimal_mark = decimal_mark
+  )
+}
+
+format_one_number <- function(x, digits, style, drop_leading_zero,
+                              trailing_zeros, decimal_mark) {
+  if (is.na(x)) {
     return("NA")
   }
 
-  rounded <- round(value, digits)
+  rounded <- round(x, digits)
 
   if (trailing_zeros) {
     formatted <- formatC(rounded, format = "f", digits = digits)
@@ -439,11 +617,50 @@ format_md_number <- function(value, digits, style, trailing_zeros) {
     formatted <- format(round(rounded, digits), nsmall = 0, trim = TRUE, scientific = FALSE)
   }
 
-  if (identical(style, "apa") && abs(rounded) < 1 && !identical(rounded, 0)) {
+  if (identical(style, "apa") && isTRUE(drop_leading_zero) && abs(rounded) < 1 && !identical(rounded, 0)) {
     formatted <- sub("^(-?)0\\.", "\\1.", formatted)
   }
 
+  if (identical(decimal_mark, ",")) {
+    formatted <- chartr(".", ",", formatted)
+  }
+
   formatted
+}
+
+format_one_p_value <- function(x, digits, drop_leading_zero, decimal_mark, threshold) {
+  if (is.na(x)) {
+    return("NA")
+  }
+
+  if (x < 0 || x > 1) {
+    return(as.character(x))
+  }
+
+  threshold_text <- format_one_number(
+    x = threshold,
+    digits = digits,
+    style = "apa",
+    drop_leading_zero = drop_leading_zero,
+    trailing_zeros = TRUE,
+    decimal_mark = decimal_mark
+  )
+
+  if (x < threshold) {
+    return(paste0("< ", threshold_text))
+  }
+
+  paste0(
+    "= ",
+    format_one_number(
+      x = x,
+      digits = digits,
+      style = "apa",
+      drop_leading_zero = drop_leading_zero,
+      trailing_zeros = TRUE,
+      decimal_mark = decimal_mark
+    )
+  )
 }
 
 parse_analysis_blocks <- function(lines, script = NULL) {
@@ -571,9 +788,9 @@ write_md_plot <- function(state, plot, caption = NULL, filename = NULL,
 
   plot_path <- fs::path(state$images_dir, filename)
 
-  ggplot2::ggsave(
-    filename = plot_path,
+  save_md_plot_image(
     plot = plot,
+    path = plot_path,
     width = width,
     height = height,
     dpi = dpi
@@ -591,6 +808,50 @@ write_md_plot <- function(state, plot, caption = NULL, filename = NULL,
   add_md_line(state, "")
 
   invisible(plot_path)
+}
+
+save_md_plot_image <- function(plot, path, width, height, dpi) {
+  if (inherits(plot, "ggplot")) {
+    ggplot2::ggsave(
+      filename = path,
+      plot = plot,
+      width = width,
+      height = height,
+      dpi = dpi
+    )
+    return(invisible(path))
+  }
+
+  grDevices::png(
+    filename = path,
+    width = width,
+    height = height,
+    units = "in",
+    res = dpi
+  )
+  on.exit(grDevices::dev.off(), add = TRUE)
+
+  draw_md_plot(plot)
+
+  invisible(path)
+}
+
+draw_md_plot <- function(plot) {
+  if (inherits(plot, "qgraph")) {
+    qgraph_plot <- plot
+
+    if (!is.null(qgraph_plot$plotOptions)) {
+      qgraph_plot$plotOptions$filetype <- "default"
+      qgraph_plot$plotOptions$plot <- TRUE
+    }
+
+    graphics::plot(qgraph_plot)
+    return(invisible(NULL))
+  }
+
+  print(plot)
+
+  invisible(NULL)
 }
 
 evaluate_analysis_block <- function(lines, envir, script) {
