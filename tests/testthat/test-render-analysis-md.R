@@ -207,6 +207,66 @@ test_that("md_plot returns the plot object outside render mode", {
   expect_s3_class(result, "ggplot")
 })
 
+test_that("md_plot saves non-ggplot plot objects during rendering", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "custom-plot.R")
+
+  writeLines(
+    c(
+      "print.qgraph_mock <- function(x, ...) {",
+      "  plot(1:3, c(3, 1, 2), type = 'b')",
+      "}",
+      "",
+      "p <- structure(list(), class = 'qgraph_mock')",
+      "birtir::md_plot(p, caption = 'Custom plot')"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(script_path, output_dir = script_dir)
+  md_lines <- readLines(output_path, warn = FALSE)
+
+  expect_true(any(grepl("^\\*\\*Figure 1\\. Custom plot\\*\\*$", md_lines)))
+  expect_true(file.exists(file.path(dirname(output_path), "images", "custom-plot_fig-001.png")))
+})
+
+test_that("md_plot redraws qgraph objects with plot.qgraph during rendering", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "qgraph-plot.R")
+  marker_path <- file.path(script_dir, "qgraph-method.txt")
+  marker_path_script <- gsub("\\\\", "/", marker_path)
+
+  writeLines(
+    c(
+      "assign('plot.qgraph', function(x, ...) {",
+      "  stopifnot(isTRUE(x$plotOptions$plot))",
+      "  stopifnot(identical(x$plotOptions$filetype, 'default'))",
+      paste0("  writeLines('plot', '", marker_path_script, "')"),
+      "  plot.new()",
+      "  rect(0.2, 0.2, 0.8, 0.8, col = 'black')",
+      "}, envir = .GlobalEnv)",
+      "",
+      "assign('print.qgraph', function(x, ...) {",
+      paste0("  writeLines('print', '", marker_path_script, "')"),
+      "}, envir = .GlobalEnv)",
+      "",
+      "p <- structure(",
+      "  list(plotOptions = list(plot = FALSE, filetype = 'png')),",
+      "  class = 'qgraph'",
+      ")",
+      "birtir::md_plot(p, caption = 'Network plot')"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(script_path, output_dir = script_dir)
+  md_lines <- readLines(output_path, warn = FALSE)
+
+  expect_true(any(grepl("^\\*\\*Figure 1\\. Network plot\\*\\*$", md_lines)))
+  expect_true(file.exists(file.path(dirname(output_path), "images", "qgraph-plot_fig-001.png")))
+  expect_identical(readLines(marker_path, warn = FALSE), "plot")
+})
+
 test_that("fmt_num formats numbers for inline reporting", {
   expect_identical(fmt_num(c(0.1234, 2.5), digits = 2), c(".12", "2.50"))
   expect_identical(

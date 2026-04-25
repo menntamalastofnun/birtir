@@ -14,7 +14,9 @@ md_plot(
 )
 }
 \arguments{
-\item{plot}{A ggplot object.}
+\item{plot}{A plot object. \code{ggplot} objects are saved with
+\code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}. Other supported plot objects are rendered on a PNG
+device using their standard plotting methods.}
 
 \item{caption}{Optional caption text.}
 
@@ -39,6 +41,6 @@ the active report.
 When called outside a render context, the plot is printed normally for
 interactive use.
 
-\code{md_plot()} saves ggplot objects into the active report during rendering and
+\code{md_plot()} saves plot objects into the active report during rendering and
 behaves like a normal plot preview helper otherwise.
 }

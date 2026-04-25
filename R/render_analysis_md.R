@@ -314,7 +314,9 @@ md_table <- function(x, caption = NULL, filename = NULL, digits = NULL) {
 #' When called outside a render context, the plot is printed normally for
 #' interactive use.
 #'
-#' @param plot A ggplot object.
+#' @param plot A plot object. `ggplot` objects are saved with
+#'   [ggplot2::ggsave()]. Other supported plot objects are rendered on a PNG
+#'   device using their standard plotting methods.
 #' @param caption Optional caption text.
 #' @param filename Optional file stem used during rendering. The `.png`
 #'   extension is added automatically.
@@ -326,7 +328,7 @@ md_table <- function(x, caption = NULL, filename = NULL, digits = NULL) {
 #'   object outside rendering.
 #'
 #' @details
-#' `md_plot()` saves ggplot objects into the active report during rendering and
+#' `md_plot()` saves plot objects into the active report during rendering and
 #' behaves like a normal plot preview helper otherwise.
 #' @export
 md_plot <- function(plot, caption = NULL, filename = NULL,
@@ -334,7 +336,7 @@ md_plot <- function(plot, caption = NULL, filename = NULL,
   state <- birtir_get_render_state()
 
   if (is.null(state)) {
-    print(plot)
+    draw_md_plot(plot)
     return(invisible(plot))
   }
 
@@ -786,9 +788,9 @@ write_md_plot <- function(state, plot, caption = NULL, filename = NULL,
 
   plot_path <- fs::path(state$images_dir, filename)
 
-  ggplot2::ggsave(
-    filename = plot_path,
+  save_md_plot_image(
     plot = plot,
+    path = plot_path,
     width = width,
     height = height,
     dpi = dpi
@@ -806,6 +808,50 @@ write_md_plot <- function(state, plot, caption = NULL, filename = NULL,
   add_md_line(state, "")
 
   invisible(plot_path)
+}
+
+save_md_plot_image <- function(plot, path, width, height, dpi) {
+  if (inherits(plot, "ggplot")) {
+    ggplot2::ggsave(
+      filename = path,
+      plot = plot,
+      width = width,
+      height = height,
+      dpi = dpi
+    )
+    return(invisible(path))
+  }
+
+  grDevices::png(
+    filename = path,
+    width = width,
+    height = height,
+    units = "in",
+    res = dpi
+  )
+  on.exit(grDevices::dev.off(), add = TRUE)
+
+  draw_md_plot(plot)
+
+  invisible(path)
+}
+
+draw_md_plot <- function(plot) {
+  if (inherits(plot, "qgraph")) {
+    qgraph_plot <- plot
+
+    if (!is.null(qgraph_plot$plotOptions)) {
+      qgraph_plot$plotOptions$filetype <- "default"
+      qgraph_plot$plotOptions$plot <- TRUE
+    }
+
+    graphics::plot(qgraph_plot)
+    return(invisible(NULL))
+  }
+
+  print(plot)
+
+  invisible(NULL)
 }
 
 evaluate_analysis_block <- function(lines, envir, script) {
