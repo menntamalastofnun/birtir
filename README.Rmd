@@ -262,3 +262,45 @@ birtir::as_report_table(desc)
 
 Inside `render_analysis_md()`, those objects can be rendered with `md_text()`
 and `md_table()`.
+
+## Reiknir methods
+
+The formula-description methods from the former `reiknir` work now live in
+`birtir::describe_data()`. Use formulas to describe the shape of the data before
+writing the report:
+
+``` r
+# One variable
+mtcars |> birtir::describe_data(mpg ~ 1)
+
+# Continuous variable by groups
+mtcars |>
+  transform(cyl = factor(cyl)) |>
+  birtir::describe_data(mpg ~ cyl)
+
+# Continuous relationships
+mtcars |> birtir::describe_data(mpg ~ wt)
+mtcars |>
+  transform(cyl = factor(cyl)) |>
+  birtir::describe_data(mpg ~ wt + cyl)
+
+# Random-intercept-style grouped descriptions
+mtcars |>
+  transform(cyl = factor(cyl)) |>
+  birtir::describe_data(mpg ~ (1 | cyl))
+```
+
+These description objects provide the same reporting surface:
+
+``` r
+desc <- mtcars |>
+  transform(cyl = factor(cyl)) |>
+  birtir::describe_data(mpg ~ cyl)
+
+birtir::as_report_text(desc)
+birtir::as_report_table(desc)
+```
+
+For compact console and Markdown summaries, the same workflow can use inline
+helpers such as `inline_hist()`, `inline_boxplot()`, `inline_bar()`,
+`inline_scatter()`, and `inline_forest()`.

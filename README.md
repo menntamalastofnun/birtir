@@ -175,9 +175,11 @@ Outside `render_analysis_md()`:
 
 - `birtir::md_table()` prints a pipe-table Markdown preview
 - `birtir::md_plot()` prints the ggplot normally
-- `birtir::md_text()` prints Markdown-ready inline text with glue formatting
+- `birtir::md_text()` prints Markdown-ready inline text with glue
+  formatting
 - `birtir::fmt_num()` returns formatted numbers for inline reporting
-- `birtir::fmt_p()` returns APA-style p-value strings such as `= .023` or `< .001`
+- `birtir::fmt_p()` returns APA-style p-value strings such as `= .023`
+  or `< .001`
 - `birtir::convert_md()` converts an existing `.md` file with Pandoc
 
 ## Custom labels
@@ -209,16 +211,16 @@ report_labels_is <- function() {
 
 ## Convert Markdown
 
-Use `convert_md()` as a secondary step when you want to convert a rendered
-Markdown report to another file format with Pandoc:
+Use `convert_md()` as a secondary step when you want to convert a
+rendered Markdown report to another file format with Pandoc:
 
 ``` r
 md_path <- birtir::render_analysis_md("scripts/regression_example.R")
 birtir::convert_md(md_path, to = "docx")
 ```
 
-`convert_md()` only accepts `.md` input and will fail clearly if Pandoc is not
-installed or not available on `PATH`.
+`convert_md()` only accepts `.md` input and will fail clearly if Pandoc
+is not installed or not available on `PATH`.
 
 ## Current limitations
 
@@ -254,3 +256,45 @@ birtir::as_report_table(desc)
 
 Inside `render_analysis_md()`, those objects can be rendered with
 `md_text()` and `md_table()`.
+
+## Reiknir methods
+
+The formula-description methods from the former `reiknir` work now live
+in `birtir::describe_data()`. Use formulas to describe the shape of the
+data before writing the report:
+
+``` r
+# One variable
+mtcars |> birtir::describe_data(mpg ~ 1)
+
+# Continuous variable by groups
+mtcars |>
+  transform(cyl = factor(cyl)) |>
+  birtir::describe_data(mpg ~ cyl)
+
+# Continuous relationships
+mtcars |> birtir::describe_data(mpg ~ wt)
+mtcars |>
+  transform(cyl = factor(cyl)) |>
+  birtir::describe_data(mpg ~ wt + cyl)
+
+# Random-intercept-style grouped descriptions
+mtcars |>
+  transform(cyl = factor(cyl)) |>
+  birtir::describe_data(mpg ~ (1 | cyl))
+```
+
+These description objects provide the same reporting surface:
+
+``` r
+desc <- mtcars |>
+  transform(cyl = factor(cyl)) |>
+  birtir::describe_data(mpg ~ cyl)
+
+birtir::as_report_text(desc)
+birtir::as_report_table(desc)
+```
+
+For compact console and Markdown summaries, the same workflow can use
+inline helpers such as `inline_hist()`, `inline_boxplot()`,
+`inline_bar()`, `inline_scatter()`, and `inline_forest()`.
