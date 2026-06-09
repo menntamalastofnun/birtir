@@ -1,29 +1,29 @@
 Package: birtir
-Title: Render Analysis Scripts to Plain Markdown Reports
+Title: Render Analysis Scripts and Statistical Descriptions
 Version: 0.0.2
 Authors@R: 
     person("Auðun", "Valborgarson", email = "your@email.com", role = c("aut", "cre"))
-Description: Runs analysis scripts, captures console output, and writes plain
-    Markdown reports. Exported helpers such as md_table() and md_plot() can be
+Author: Auðun Valborgarson
+Maintainer: Auðun Valborgarson <your@email.com>
+Description: Runs analysis scripts, captures console output, writes plain
+    Markdown reports, and provides report-ready statistical description helpers.
+    Exported helpers such as md_table(), md_plot(), and describe_data() can be
     used directly in scripts, printing previews interactively and writing into
     the active report during render_analysis_md().
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
+Depends:
+    R (>= 4.2.0)
 Imports:
+    cli,
     dplyr,
     fs,
     ggplot2,
     glue,
     knitr,
-    lifecycle,
-    purrr,
     rlang,
-    scales,
-    stringr,
     tibble,
-    tidyr,
     utils
 Suggests:
     testthat (>= 3.0.0),
@@ -31,3 +31,4 @@ Suggests:
 Config/testthat/edition: 3
 URL: https://github.com/auv2/birtir
 BugReports: https://github.com/auv2/birtir/issues
+Config/roxygen2/version: 8.0.0

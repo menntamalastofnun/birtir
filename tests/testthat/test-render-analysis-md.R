@@ -54,6 +54,31 @@ test_that("render_analysis_md supports namespaced helper usage inside scripts", 
   expect_true(file.exists(file.path(report_dir, "images", "namespaced-helpers_fig-001.png")))
 })
 
+test_that("render_analysis_md keeps helper output in script order", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "script_order.R")
+
+  writeLines(
+    c(
+      "data <- data.frame(score = c(1, 2, 3))",
+      "summary(data)",
+      "md_table(data, caption = 'Scores')",
+      "'after table'"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(script_path, output_dir = script_dir)
+  md_lines <- readLines(output_path, warn = FALSE)
+
+  summary_line <- grep("Min\\.", md_lines)[[1]]
+  table_line <- grep("^\\*\\*Table 1\\. Scores\\*\\*$", md_lines)[[1]]
+  after_line <- grep("^\\[1\\] \"after table\"$", md_lines)[[1]]
+
+  expect_lt(summary_line, table_line)
+  expect_lt(table_line, after_line)
+})
+
 test_that("render_analysis_md uses custom report labels", {
   script_dir <- withr::local_tempdir()
   script_path <- file.path(script_dir, "custom_labels.R")
@@ -375,6 +400,31 @@ test_that("render_analysis_md reserves the md_text helper name", {
   )
 })
 
+test_that("render_analysis_md renders description helper output", {
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "description_report.R")
+
+  writeLines(
+    c(
+      "#| h1: Description report",
+      "df <- data.frame(score = c(1, 2, 3, NA), group = factor(c('a', 'a', 'b', 'b')))",
+      "desc <- describe_data(df, score ~ group)",
+      "md_text(as_report_text(desc))",
+      "md_table(as_report_table(desc), caption = 'Score by group', digits = 2)"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(script_path, output_dir = script_dir)
+  md_lines <- readLines(output_path, warn = FALSE)
+  table_path <- file.path(dirname(output_path), "tables", "description-report_tbl-001.md")
+
+  expect_true(any(grepl("^# Description report$", md_lines)))
+  expect_true(any(grepl("^\\*\\*Table 1\\. Score by group\\*\\*$", md_lines)))
+  expect_true(any(grepl("score ~ group", md_lines, fixed = TRUE)))
+  expect_true(file.exists(table_path))
+})
+
 test_that("render_analysis_md keeps code blocks intact across blank lines", {
   script_dir <- withr::local_tempdir()
   script_path <- file.path(script_dir, "multiline_expression.R")
@@ -462,13 +512,6 @@ test_that("render_analysis_md captures messages, warnings, and errors", {
   expect_true(any(grepl("^Message: hello$", md_lines)))
   expect_true(any(grepl("^Warning: careful$", md_lines)))
   expect_true(any(grepl("^Error: boom$", md_lines)))
-})
-
-test_that("legacy helpers emit deprecation warnings", {
-  expect_warning(
-    fa_heildartolu(),
-    "deprecated"
-  )
 })
 
 test_that("convert_md rejects non-markdown input", {
