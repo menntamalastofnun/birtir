@@ -281,7 +281,7 @@ md_table <- function(x, caption = NULL, filename = NULL, digits = NULL) {
   if (!is.null(digits) && is.data.frame(out)) {
     out <- dplyr::mutate(
       out,
-      dplyr::across(where(is.numeric), ~ round(.x, digits))
+      dplyr::across(dplyr::where(is.numeric), ~ round(.x, digits))
     )
   }
 
@@ -517,10 +517,10 @@ fmt_num <- function(x,
                     drop_leading_zero = TRUE,
                     trailing_zeros = TRUE,
                     decimal_mark = ".") {
-  stopifnot(is.numeric(x))
-  stopifnot(is.numeric(digits), length(digits) == 1, !is.na(digits), digits >= 0)
-  stopifnot(is.logical(drop_leading_zero), length(drop_leading_zero) == 1, !is.na(drop_leading_zero))
-  stopifnot(is.logical(trailing_zeros), length(trailing_zeros) == 1, !is.na(trailing_zeros))
+  validate_numeric_vector(x, "x")
+  validate_non_negative_integerish_scalar(digits, "digits")
+  validate_logical_scalar(drop_leading_zero, "drop_leading_zero")
+  validate_logical_scalar(trailing_zeros, "trailing_zeros")
   validate_decimal_mark(decimal_mark)
 
   digits <- as.integer(digits)
@@ -559,17 +559,14 @@ fmt_p <- function(x,
                   drop_leading_zero = TRUE,
                   decimal_mark = ".",
                   p_threshold = 0.001) {
-  stopifnot(is.numeric(x))
-  stopifnot(is.numeric(digits), length(digits) == 1, !is.na(digits), digits >= 0)
-  stopifnot(is.logical(drop_leading_zero), length(drop_leading_zero) == 1, !is.na(drop_leading_zero))
+  validate_numeric_vector(x, "x")
+  validate_non_negative_integerish_scalar(digits, "digits")
+  validate_logical_scalar(drop_leading_zero, "drop_leading_zero")
   validate_decimal_mark(decimal_mark)
-  stopifnot(
-    is.numeric(p_threshold),
-    length(p_threshold) == 1,
-    !is.na(p_threshold),
-    p_threshold > 0,
-    p_threshold < 1
-  )
+
+  if (!is.numeric(p_threshold) || length(p_threshold) != 1 || is.na(p_threshold) || p_threshold <= 0 || p_threshold >= 1) {
+    cli::cli_abort("`p_threshold` must be a single number between 0 and 1.")
+  }
 
   digits <- as.integer(digits)
 
@@ -834,6 +831,7 @@ save_md_plot_image <- function(plot, path, width, height, dpi) {
   )
   on.exit(grDevices::dev.off(), add = TRUE)
 
+  graphics::plot.new()
   draw_md_plot(plot)
 
   invisible(path)

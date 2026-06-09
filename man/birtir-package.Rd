@@ -4,10 +4,11 @@
 \name{birtir-package}
 \alias{birtir}
 \alias{birtir-package}
-\title{birtir: Render Analysis Scripts to Plain Markdown Reports}
+\title{birtir: Render Analysis Scripts and Statistical Descriptions}
 \description{
 \code{birtir} runs plain \code{.R} scripts and turns them into structured Markdown
-reports, saving plots and tables alongside the generated \code{.md} file.
+reports, saving plots and tables alongside the generated \code{.md} file. It also
+provides report-ready statistical description helpers.
 }
 \seealso{
 Useful links:
@@ -19,6 +20,11 @@ Useful links:
 }
 \author{
 \strong{Maintainer}: Auðun Valborgarson \email{your@email.com}
+
+Authors:
+\itemize{
+  \item Auðun Valborgarson \email{your@email.com}
+}
 
 }
 \keyword{internal}
