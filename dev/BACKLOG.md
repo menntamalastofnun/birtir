@@ -1,5 +1,21 @@
 # birtir backlog
 
+## Release metadata
+
+- Replace the placeholder maintainer email in `DESCRIPTION` before publishing.
+- Decide whether a `NEWS.md` changelog is needed before the next tagged release.
+- Run `R CMD build .` and `R CMD check --no-manual --no-build-vignettes` from a
+  clean worktree before release.
+
+## Repository hygiene
+
+- Decide whether to keep the current `birtir.Rproj` line-ending normalization
+  change, then either commit it or restore the file.
+- Fix the likely typo `birtit.Roroj` in `.gitignore` if it was meant to ignore
+  `birtir.Rproj`.
+- Make `.githooks/pre-commit` executable or remove the hook if it is no longer
+  intended. Git currently ignores it because the executable bit is not set.
+
 ## Render context
 
 - Revisit the current render state design.
@@ -42,3 +58,11 @@
 - Add tests for malformed helper inputs.
 - Add tests for scripts that intentionally modify session state, so expected
   behavior is explicit.
+
+## Recently handled
+
+- Removed unused Excel files from `data/` and `inst/extdata/`.
+- Removed redundant standalone `fmt_num()` and `fmt_p()` tests from
+  `test-render-analysis-md.R`; formatter behavior remains covered in
+  `test-description-helpers.R`, and `md_text()` still checks render-facing
+  formatting behavior.
