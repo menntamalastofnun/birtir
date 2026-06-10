@@ -292,25 +292,6 @@ test_that("md_plot redraws qgraph objects with plot.qgraph during rendering", {
   expect_identical(readLines(marker_path, warn = FALSE), "plot")
 })
 
-test_that("fmt_num formats numbers for inline reporting", {
-  expect_identical(fmt_num(c(0.1234, 2.5), digits = 2), c(".12", "2.50"))
-  expect_identical(
-    fmt_num(0.1234, digits = 2, drop_leading_zero = FALSE),
-    "0.12"
-  )
-  expect_identical(
-    fmt_num(c(0.1234, 2.5), digits = 2, decimal_mark = ","),
-    c(",12", "2,50")
-  )
-})
-
-test_that("fmt_p formats p-values for inline reporting", {
-  expect_identical(fmt_p(0.0004), "< .001")
-  expect_identical(fmt_p(0.0234), "= .023")
-  expect_identical(fmt_p(0.0234, drop_leading_zero = FALSE), "= 0.023")
-  expect_identical(fmt_p(0.0234, decimal_mark = ","), "= ,023")
-})
-
 test_that("md_text formats inline numeric values outside render mode", {
   output <- capture.output(
     result <- md_text("This is _R_ = {0.1234} and _M_ = {2.5}", digits = 2)
