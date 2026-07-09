@@ -50,14 +50,7 @@ Runs a plain \code{.R} analysis script and writes a plain \code{.md} report.
 saves tables and ggplot objects created with \code{\link[=md_table]{md_table()}} and \code{\link[=md_plot]{md_plot()}},
 and writes a structured Markdown file into a report directory.
 
-The script may contain special comment directives:
-\itemize{
-\item \verb{#| h1: Title}
-\item \verb{#| h2: Subtitle}
-\item \verb{#| text: Some markdown text}
-}
-
-It may also call helper functions:
+The script may call helper functions to write text, tables, and plots:
 \itemize{
 \item \code{md_table()}
 \item \code{md_plot()}

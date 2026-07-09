@@ -2,9 +2,9 @@ Package: birtir
 Title: Render Analysis Scripts and Statistical Descriptions
 Version: 0.0.2
 Authors@R: 
-    person("Auðun", "Valborgarson", email = "your@email.com", role = c("aut", "cre"))
+    person("Auðun", "Valborgarson", email = "audun@valborgarson.net", role = c("aut", "cre"))
 Author: Auðun Valborgarson
-Maintainer: Auðun Valborgarson <your@email.com>
+Maintainer: Auðun Valborgarson <audun@valborgarson.net>
 Description: Runs analysis scripts, captures console output, writes plain
     Markdown reports, and provides report-ready statistical description helpers.
     Exported helpers such as md_table(), md_plot(), and describe_data() can be

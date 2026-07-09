@@ -1,5 +1,4 @@
-#| h1: Regression example
-#| text: Simple linear model using mtcars.
+birtir::md_text("# Regression example\n\nSimple linear model using mtcars.")
 
 model <- lm(mpg ~ wt, data = mtcars)
 summary(model)
@@ -9,7 +8,7 @@ coef_tbl <- as.data.frame(summary(model)$coefficients) |>
 
 birtir::md_table(coef_tbl, caption = "Coefficient table", digits = 3)
 
-#| h2: Plot
+birtir::md_text("## Plot")
 
 p <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
   ggplot2::geom_point() +

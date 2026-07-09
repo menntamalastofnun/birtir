@@ -1,31 +1,48 @@
-#!C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe
-$ErrorActionPreference = "Stop"
+#!/bin/bash
+set -e
 
-$staged = & 'C:\Git\cmd\git.exe' diff --cached --name-only |
-  Where-Object { $_ -match '^README\.[R]?md$' }
+# Get list of staged files
+staged=$(git diff --cached --name-only)
 
-$msg = "use 'git commit --no-verify' to override this check"
+# Check if README.md or README.Rmd are staged
+has_readme_rmd=false
+has_readme_md=false
 
-if ($staged.Count -eq 0) {
+while read -r file; do
+  if [[ "$file" == "README.Rmd" ]]; then
+    has_readme_rmd=true
+  elif [[ "$file" == "README.md" ]]; then
+    has_readme_md=true
+  fi
+done <<< "$staged"
+
+# If neither is staged, we are good to go
+if [ "$has_readme_rmd" = false ] && [ "$has_readme_md" = false ]; then
   exit 0
-}
+fi
 
-$readmeRmd = Join-Path (Get-Location) 'README.Rmd'
-$readmeMd = Join-Path (Get-Location) 'README.md'
+msg="use 'git commit --no-verify' to override this check"
 
-if ((Test-Path $readmeRmd) -and (Test-Path $readmeMd) -and ((Get-Item $readmeRmd).LastWriteTime -gt (Get-Item $readmeMd).LastWriteTime)) {
-  Write-Host "README.md is out of date; please re-knit README.Rmd"
-  Write-Host $msg
+# Check if README.Rmd is newer than README.md
+if [ -f "README.Rmd" ] && [ -f "README.md" ]; then
+  if [ "README.Rmd" -nt "README.md" ]; then
+    echo "README.md is out of date; please re-knit README.Rmd"
+    echo "$msg"
+    exit 1
+  fi
+fi
+
+# Check if both are staged
+if [ "$has_readme_rmd" = true ] && [ "$has_readme_md" = false ]; then
+  echo "README.Rmd and README.md should be both staged"
+  echo "$msg"
   exit 1
-}
+fi
 
-$hasReadmeRmd = $staged -contains 'README.Rmd'
-$hasReadmeMd = $staged -contains 'README.md'
-
-if (-not ($hasReadmeRmd -and $hasReadmeMd)) {
-  Write-Host "README.Rmd and README.md should be both staged"
-  Write-Host $msg
+if [ "$has_readme_rmd" = false ] && [ "$has_readme_md" = true ]; then
+  echo "README.Rmd and README.md should be both staged"
+  echo "$msg"
   exit 1
-}
+fi
 
 exit 0
