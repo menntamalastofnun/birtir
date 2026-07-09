@@ -9,12 +9,10 @@
 
 ## Repository hygiene
 
-- Decide whether to keep the current `birtir.Rproj` line-ending normalization
-  change, then either commit it or restore the file.
-- Fix the likely typo `birtit.Roroj` in `.gitignore` if it was meant to ignore
-  `birtir.Rproj`.
-- Make `.githooks/pre-commit` executable or remove the hook if it is no longer
-  intended. Git currently ignores it because the executable bit is not set.
+- [x] Decided to keep `birtir.Rproj` untracked and ignored in Git.
+- [x] Fixed the `birtit.Roroj` typo in `.gitignore`.
+- [x] Marked `.githooks/pre-commit` executable in Git.
+
 
 ## Render context
 
@@ -51,6 +49,7 @@
 
 ## Recently handled
 
+- Resolved repository hygiene tasks: marked `.githooks/pre-commit` executable, verified `birtir.Rproj` is ignored, and fixed `.gitignore` typo.
 - Removed unused Excel files from `data/` and `inst/extdata/`.
 - Removed redundant standalone `fmt_num()` and `fmt_p()` tests from
   `test-render-analysis-md.R`; formatter behavior remains covered in
