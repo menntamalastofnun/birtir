@@ -10,3 +10,4 @@
 ^outputs$
 ^.*:Zone\.Identifier$
 ^\.\.Rcheck$
+^\.agents$
