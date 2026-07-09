@@ -1,11 +1,11 @@
-test_that("render_analysis_md captures output, directives, and helpers", {
+test_that("render_analysis_md captures output, text, and helpers", {
   script_dir <- withr::local_tempdir()
   script_path <- file.path(script_dir, "example_report.R")
 
   writeLines(
     c(
-      "#| h1: Example report",
-      "#| text: Intro paragraph.",
+      "md_text('# Example report')",
+      "md_text('Intro paragraph.')",
       "",
       "x <- 1 + 1",
       "x",
@@ -32,7 +32,7 @@ test_that("render_analysis_md supports namespaced helper usage inside scripts", 
 
   writeLines(
     c(
-      "#| h1: Namespaced helpers",
+      "birtir::md_text('# Namespaced helpers')",
       "tbl <- data.frame(term = 'x', value = 2)",
       "birtir::md_table(tbl, caption = 'Namespaced table')",
       "",
@@ -139,7 +139,7 @@ test_that("render_analysis_md supports book layout with shared assets", {
 
   writeLines(
     c(
-      "#| h1: Book layout",
+      "birtir::md_text('# Book layout')",
       "tbl <- data.frame(term = 'x', value = 2)",
       "birtir::md_table(tbl, caption = 'Shared table')",
       "",
@@ -187,7 +187,7 @@ test_that("render_analysis_md exposes params inside the script", {
 
   writeLines(
     c(
-      "#| h1: Param example",
+      "md_text('# Param example')",
       "id",
       "params$id",
       "md_table(data.frame(id = id), caption = paste('Report for', id))"
@@ -325,7 +325,7 @@ test_that("render_analysis_md supports md_text inside scripts", {
 
   writeLines(
     c(
-      "#| h1: Inline text",
+      "md_text('# Inline text')",
       "x <- 0.4567",
       "md_text('This is _R_ = {x}', digits = 2)"
     ),
@@ -345,7 +345,7 @@ test_that("render_analysis_md can set decimal_mark globally for md_text", {
 
   writeLines(
     c(
-      "#| h1: Inline text",
+      "md_text('# Inline text')",
       "x <- 0.4567",
       "p <- 0.0234",
       "md_text('p {p}', style = 'p', digits = 3)",
@@ -387,7 +387,7 @@ test_that("render_analysis_md renders description helper output", {
 
   writeLines(
     c(
-      "#| h1: Description report",
+      "md_text('# Description report')",
       "df <- data.frame(score = c(1, 2, 3, NA), group = factor(c('a', 'a', 'b', 'b')))",
       "desc <- describe_data(df, score ~ group)",
       "md_text(as_report_text(desc))",
@@ -451,23 +451,7 @@ test_that("render_analysis_md supports scripts that attach packages", {
   expect_true(file.exists(file.path(dirname(output_path), "images", "library-script_fig-001.png")))
 })
 
-test_that("render_analysis_md reports invalid directives clearly", {
-  script_dir <- withr::local_tempdir()
-  script_path <- file.path(script_dir, "bad_directive.R")
 
-  writeLines(
-    c(
-      "#| text: ok",
-      "#| Prufa"
-    ),
-    script_path
-  )
-
-  expect_error(
-    render_analysis_md(script_path, output_dir = script_dir),
-    "Invalid birtir directive.*Supported directives"
-  )
-})
 
 test_that("render_analysis_md captures messages, warnings, and errors", {
   script_dir <- withr::local_tempdir()

@@ -6,12 +6,7 @@
 #' saves tables and ggplot objects created with [md_table()] and [md_plot()],
 #' and writes a structured Markdown file into a report directory.
 #'
-#' The script may contain special comment directives:
-#' - `#| h1: Title`
-#' - `#| h2: Subtitle`
-#' - `#| text: Some markdown text`
-#'
-#' It may also call helper functions:
+#' The script may call helper functions to write text, tables, and plots:
 #' - `md_table()`
 #' - `md_plot()`
 #' - `md_text()`
@@ -106,36 +101,17 @@ render_analysis_md <- function(script,
   birtir_set_render_state(state)
   on.exit(birtir_clear_render_state(), add = TRUE)
 
-  blocks <- parse_analysis_blocks(script_lines, script = script)
+  result <- evaluate_analysis_block(
+    script_lines,
+    envir = envir,
+    script = script,
+    state = state,
+    show_code = show_code
+  )
 
-  for (block in blocks) {
-    if (identical(block$type, "directive")) {
-      emit_directive(state, block$value, block$text)
-      next
-    }
-
-    code <- paste(block$lines, collapse = "\n")
-
-    if (show_code && nzchar(trimws(code))) {
-      add_md_line(state, "```r")
-      add_md_line(state, code)
-      add_md_line(state, "```")
-      add_md_line(state, "")
-    }
-
-    result <- evaluate_analysis_block(
-      block$lines,
-      envir = envir,
-      script = script,
-      state = state
-    )
-
-    add_md_text_block(state, result$lines)
-
-    if (!is.null(result$error)) {
-      writeLines(state$md, md_path)
-      stop(result$error, call. = FALSE)
-    }
+  if (!is.null(result$error)) {
+    writeLines(state$md, md_path)
+    stop(result$error, call. = FALSE)
   }
 
   writeLines(state$md, md_path)
@@ -663,90 +639,7 @@ format_one_p_value <- function(x, digits, drop_leading_zero, decimal_mark, thres
   )
 }
 
-parse_analysis_blocks <- function(lines, script = NULL) {
-  blocks <- list()
-  current_code <- character()
 
-  flush_code <- function() {
-    parsed_code <- paste(current_code, collapse = "\n")
-    if (!nzchar(trimws(parsed_code))) {
-      current_code <<- character()
-      return(invisible(NULL))
-    }
-
-    blocks[[length(blocks) + 1L]] <<- list(
-      type = "code",
-      lines = current_code
-    )
-    current_code <<- character()
-    invisible(NULL)
-  }
-
-  for (i in seq_along(lines)) {
-    line <- lines[[i]]
-    trimmed <- trimws(line)
-
-    if (grepl("^#\\|\\s*(h1|h2|text)\\s*:", trimmed)) {
-      flush_code()
-
-      directive <- sub("^#\\|\\s*([a-zA-Z0-9_]+)\\s*:.*$", "\\1", trimmed)
-      text <- sub("^#\\|\\s*[a-zA-Z0-9_]+\\s*:\\s*", "", trimmed)
-
-      blocks[[length(blocks) + 1L]] <- list(
-        type = "directive",
-        value = directive,
-        text = text
-      )
-      next
-    }
-
-    if (grepl("^#\\|", trimmed)) {
-      location <- if (is.null(script)) {
-        paste0("line ", i)
-      } else {
-        paste0(script, " near line ", i)
-      }
-
-      stop(
-        paste0(
-          "Invalid birtir directive in ",
-          location,
-          ": `",
-          trimmed,
-          "`. Supported directives are `#| h1:`, `#| h2:`, and `#| text:`."
-        ),
-        call. = FALSE
-      )
-    }
-
-    current_code <- c(current_code, line)
-  }
-
-  flush_code()
-  blocks
-}
-
-emit_directive <- function(state, directive, text) {
-  if (identical(directive, "h1")) {
-    add_md_line(state, paste0("# ", text))
-    add_md_line(state, "")
-    return(invisible(NULL))
-  }
-
-  if (identical(directive, "h2")) {
-    add_md_line(state, paste0("## ", text))
-    add_md_line(state, "")
-    return(invisible(NULL))
-  }
-
-  if (identical(directive, "text")) {
-    add_md_line(state, text)
-    add_md_line(state, "")
-    return(invisible(NULL))
-  }
-
-  invisible(NULL)
-}
 
 write_md_table <- function(state, table_md, caption = NULL, filename = NULL) {
   state$table_index <- state$table_index + 1L
@@ -855,7 +748,7 @@ draw_md_plot <- function(plot) {
   invisible(NULL)
 }
 
-evaluate_analysis_block <- function(lines, envir, script, state = NULL) {
+evaluate_analysis_block <- function(lines, envir, script, state = NULL, show_code = FALSE) {
   code <- paste(lines, collapse = "\n")
   srcfile <- srcfilecopy(script, lines)
 
@@ -878,11 +771,24 @@ evaluate_analysis_block <- function(lines, envir, script, state = NULL) {
   srcrefs <- attr(expressions, "srcref", exact = TRUE)
 
   for (i in seq_along(expressions)) {
+    expr <- expressions[[i]]
+    ref <- srcrefs[[i]]
+
+    if (show_code && !is.null(state) && !is.null(ref)) {
+      expr_code <- as.character(ref)
+      if (nzchar(trimws(paste(expr_code, collapse = "\n")))) {
+        add_md_line(state, "```r")
+        add_md_line(state, expr_code)
+        add_md_line(state, "```")
+        add_md_line(state, "")
+      }
+    }
+
     result <- evaluate_parsed_expression(
-      expressions[[i]],
+      expr,
       envir = envir,
       script = script,
-      srcref = srcrefs[[i]]
+      srcref = ref
     )
 
     if (is.null(state)) {

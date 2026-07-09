@@ -19,11 +19,11 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Auðun Valborgarson \email{your@email.com}
+\strong{Maintainer}: Auðun Valborgarson \email{audun@valborgarson.net}
 
 Authors:
 \itemize{
-  \item Auðun Valborgarson \email{your@email.com}
+  \item Auðun Valborgarson \email{audun@valborgarson.net}
 }
 
 }

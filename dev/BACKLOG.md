@@ -35,16 +35,6 @@
   isolation.
 - Consider whether some cleanup or scoped execution should be added later.
 
-## Directive parsing
-
-- Current directives are line-based and only support:
-  - `#| h1:`
-  - `#| h2:`
-  - `#| text:`
-- Think about whether this remains intentionally minimal or if more structure
-  will be needed later.
-- If more directives are added, keep errors clear and parsing predictable.
-
 ## Helper API
 
 - Keep `md_table()` and `md_plot()` as the shared public script API.

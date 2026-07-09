@@ -29,4 +29,3 @@ Current assumptions:
 - one render at a time in a normal interactive R session
 - helpers are the public script API
 - custom table/figure names are passed as a label object, not global state
-- supported directives are `#| h1:`, `#| h2:`, and `#| text:`
