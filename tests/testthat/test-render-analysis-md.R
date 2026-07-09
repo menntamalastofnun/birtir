@@ -595,3 +595,73 @@ test_that("convert_md strips redundant table-file links only in the temporary ex
   expect_false(identical(call_args$input, "report.md"))
   expect_true(grepl("^report-convert-.*\\.md$", call_args$input))
 })
+
+test_that("render_analysis_md supports nested rendering without state pollution", {
+  script_dir <- withr::local_tempdir()
+  inner_script_path <- file.path(script_dir, "inner.R")
+  outer_script_path <- file.path(script_dir, "outer.R")
+
+  writeLines(
+    c(
+      "md_text('# Inner report')",
+      "md_text('Inner body.')"
+    ),
+    inner_script_path
+  )
+
+  inner_path_escaped <- gsub("\\\\", "/", inner_script_path)
+
+  writeLines(
+    c(
+      "md_text('# Outer report')",
+      paste0("birtir::render_analysis_md('", inner_path_escaped, "', output_dir = params$output_dir)"),
+      "md_text('Outer body.')"
+    ),
+    outer_script_path
+  )
+
+  expect_length(birtir:::birtir_runtime$states, 0)
+
+  # Render outer script
+  output_path <- render_analysis_md(
+    outer_script_path,
+    output_dir = script_dir,
+    params = list(output_dir = script_dir)
+  )
+
+  expect_length(birtir:::birtir_runtime$states, 0)
+
+  # Verify inner output
+  inner_md_path <- file.path(script_dir, "inner", "inner.md")
+  expect_true(file.exists(inner_md_path))
+  inner_lines <- readLines(inner_md_path, warn = FALSE)
+  expect_true(any(grepl("^# Inner report$", inner_lines)))
+  expect_true(any(grepl("^Inner body\\.$", inner_lines)))
+
+  # Verify outer output
+  outer_lines <- readLines(output_path, warn = FALSE)
+  expect_true(any(grepl("^# Outer report$", outer_lines)))
+  expect_true(any(grepl("^Outer body\\.$", outer_lines)))
+  expect_false(any(grepl("Inner report", outer_lines)))
+})
+
+test_that("render_analysis_md cleans up stack on successful and failed rendering runs", {
+  script_dir <- withr::local_tempdir()
+  
+  # 1. Success case
+  success_script <- file.path(script_dir, "success.R")
+  writeLines("md_text('OK')", success_script)
+  
+  expect_length(birtir:::birtir_runtime$states, 0)
+  render_analysis_md(success_script, output_dir = script_dir)
+  expect_length(birtir:::birtir_runtime$states, 0)
+
+  # 2. Failure case
+  fail_script <- file.path(script_dir, "fail.R")
+  writeLines(c("md_text('Before')", "stop('boom')"), fail_script)
+
+  expect_length(birtir:::birtir_runtime$states, 0)
+  expect_error(render_analysis_md(fail_script, output_dir = script_dir), "boom")
+  expect_length(birtir:::birtir_runtime$states, 0)
+})
+

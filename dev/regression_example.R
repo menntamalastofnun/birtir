@@ -1,5 +1,5 @@
 md_text("# Regression example\n\nSimple linear model using mtcars.")
-
+# This is a coment
 model <- lm(mpg ~ wt, data = mtcars)
 summary(model)
 

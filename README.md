@@ -293,5 +293,42 @@ birtir::as_report_table(desc)
 ```
 
 For compact console and Markdown summaries, the same workflow can use
-inline helpers such as `inline_hist()`, `inline_boxplot()`,
-`inline_bar()`, `inline_scatter()`, and `inline_forest()`.
+inline helpers:
+
+``` r
+# Compact inline histogram
+birtir::inline_hist(mtcars$mpg, n_bins = 5)
+#> [1] "▄█▆▂▃"
+
+# Compact inline boxplot
+birtir::inline_boxplot(mtcars$mpg, width = 25)
+#> ├────|░░░│░░░|──────────┤
+#> 10  15  19  23         34
+
+# Compact inline bar representation for categories
+birtir::inline_bar(table(mtcars$cyl), width = 15)
+#> 4 │███████████▓     11.0
+#> 6 │███████▓         7.0
+#> 8 │██████████████▓  14.0
+
+# Compact inline scatter plot
+birtir::inline_scatter(mtcars$wt, mtcars$mpg, width = 20, height = 4)
+#>  33.9 │ ░ ··                
+#>  22.1 │   ···   ░           
+#>       │      ░░·░█░▒·      ·
+#>  10.4 │           ··      ··
+#>       └─────────────────────
+#>        1.5              5.4
+
+# Compact inline forest plot
+birtir::inline_forest(
+  estimate = c(x1 = 0.31, x2 = -0.15),
+  ci_low = c(0.12, -0.35),
+  ci_high = c(0.50, 0.05),
+  n = c(100, 100)
+)
+#> ── Coefficients ──────────────────────────────────────────
+#>                     n  estimate    [95% CI]
+#> x1       │───●──  100  0.31 [0.12, 0.50] *
+#> x2  ───●─│        100  -0.15 [-0.35, 0.05]
+```

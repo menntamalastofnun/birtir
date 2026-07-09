@@ -98,8 +98,8 @@ render_analysis_md <- function(script,
   envir$md_text <- md_text
   envir$text_md <- md_text
 
-  birtir_set_render_state(state)
-  on.exit(birtir_clear_render_state(), add = TRUE)
+  birtir_push_render_state(state)
+  on.exit(birtir_pop_render_state(), add = TRUE)
 
   result <- evaluate_analysis_block(
     script_lines,
@@ -155,26 +155,27 @@ validate_render_params <- function(params) {
 }
 
 birtir_runtime <- new.env(parent = emptyenv())
+birtir_runtime$states <- list()
 
-birtir_set_render_state <- function(state) {
-  assign("state", state, envir = birtir_runtime)
+birtir_push_render_state <- function(state) {
+  birtir_runtime$states <- c(list(state), birtir_runtime$states)
   invisible(NULL)
 }
 
 birtir_get_render_state <- function() {
-  if (!exists("state", envir = birtir_runtime, inherits = FALSE)) {
+  if (length(birtir_runtime$states) == 0) {
     return(NULL)
   }
-
-  get("state", envir = birtir_runtime, inherits = FALSE)
+  birtir_runtime$states[[1]]
 }
 
-birtir_clear_render_state <- function() {
-  if (exists("state", envir = birtir_runtime, inherits = FALSE)) {
-    rm("state", envir = birtir_runtime)
+birtir_pop_render_state <- function() {
+  if (length(birtir_runtime$states) == 0) {
+    return(NULL)
   }
-
-  invisible(NULL)
+  state <- birtir_runtime$states[[1]]
+  birtir_runtime$states <- birtir_runtime$states[-1]
+  state
 }
 
 #' Create report labels for rendered captions
