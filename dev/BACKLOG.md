@@ -2,7 +2,6 @@
 
 ## Release metadata
 
-- Decide whether a `NEWS.md` changelog is needed before the next tagged release.
 - Run `R CMD build .` and `R CMD check --no-manual --no-build-vignettes` from a
   clean worktree before release.
 

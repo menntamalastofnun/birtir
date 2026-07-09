@@ -299,5 +299,27 @@ birtir::as_report_table(desc)
 ```
 
 For compact console and Markdown summaries, the same workflow can use inline
-helpers such as `inline_hist()`, `inline_boxplot()`, `inline_bar()`,
-`inline_scatter()`, and `inline_forest()`.
+helpers:
+
+```{r}
+# Compact inline histogram
+birtir::inline_hist(mtcars$mpg, n_bins = 5)
+
+# Compact inline boxplot
+birtir::inline_boxplot(mtcars$mpg, width = 25)
+
+# Compact inline bar representation for categories
+birtir::inline_bar(table(mtcars$cyl), width = 15)
+
+# Compact inline scatter plot
+birtir::inline_scatter(mtcars$wt, mtcars$mpg, width = 20, height = 4)
+
+# Compact inline forest plot
+birtir::inline_forest(
+  estimate = c(x1 = 0.31, x2 = -0.15),
+  ci_low = c(0.12, -0.35),
+  ci_high = c(0.50, 0.05),
+  n = c(100, 100)
+)
+```
+
