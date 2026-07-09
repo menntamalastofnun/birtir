@@ -2,16 +2,9 @@
 
 ## Release metadata
 
-- Replace the placeholder maintainer email in `DESCRIPTION` before publishing.
 - Decide whether a `NEWS.md` changelog is needed before the next tagged release.
 - Run `R CMD build .` and `R CMD check --no-manual --no-build-vignettes` from a
   clean worktree before release.
-
-## Repository hygiene
-
-- [x] Decided to keep `birtir.Rproj` untracked and ignored in Git.
-- [x] Fixed the `birtit.Roroj` typo in `.gitignore`.
-- [x] Marked `.githooks/pre-commit` executable in Git.
 
 
 ## Render context
