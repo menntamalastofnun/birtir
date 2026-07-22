@@ -35,3 +35,6 @@ A \code{description_labels} object.
 \description{
 Create output labels for birtir summaries
 }
+\examples{
+description_labels(table = "Tafla", figure = "Mynd")
+}

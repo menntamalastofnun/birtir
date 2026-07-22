@@ -20,7 +20,8 @@ test_that("render_analysis_md captures output, text, and helpers", {
 
   expect_true(any(grepl("^# Example report$", md_lines)))
   expect_true(any(grepl("^Intro paragraph\\.$", md_lines)))
-  expect_true(any(grepl("^\\*\\*Table 1\\. Values\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*\\*Table 1\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*Values\\*$", md_lines)))
   expect_true(any(grepl("^\\[Table: example-report_tbl-001\\.md\\]", md_lines)))
   expect_true(any(grepl("^\\[1\\] 2$", md_lines)))
   expect_true(file.exists(file.path(dirname(output_path), "tables", "example-report_tbl-001.md")))
@@ -48,8 +49,10 @@ test_that("render_analysis_md supports namespaced helper usage inside scripts", 
   report_dir <- dirname(output_path)
 
   expect_true(any(grepl("^# Namespaced helpers$", md_lines)))
-  expect_true(any(grepl("^\\*\\*Table 1\\. Namespaced table\\*\\*$", md_lines)))
-  expect_true(any(grepl("^\\*\\*Figure 1\\. Namespaced plot\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*\\*Table 1\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*Namespaced table\\*$", md_lines)))
+  expect_true(any(grepl("^\\*\\*Figure 1\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*Namespaced plot\\*$", md_lines)))
   expect_true(file.exists(file.path(report_dir, "tables", "namespaced-helpers_tbl-001.md")))
   expect_true(file.exists(file.path(report_dir, "images", "namespaced-helpers_fig-001.png")))
 })
@@ -72,7 +75,7 @@ test_that("render_analysis_md keeps helper output in script order", {
   md_lines <- readLines(output_path, warn = FALSE)
 
   summary_line <- grep("Min\\.", md_lines)[[1]]
-  table_line <- grep("^\\*\\*Table 1\\. Scores\\*\\*$", md_lines)[[1]]
+  table_line <- grep("^\\*\\*Table 1\\*\\*$", md_lines)[[1]]
   after_line <- grep("^\\[1\\] \"after table\"$", md_lines)[[1]]
 
   expect_lt(summary_line, table_line)
@@ -107,8 +110,10 @@ test_that("render_analysis_md uses custom report labels", {
   )
   md_lines <- readLines(output_path, warn = FALSE)
 
-  expect_true(any(grepl("^\\*\\*Tafla 1\\. Tafla lysing\\*\\*$", md_lines)))
-  expect_true(any(grepl("^\\*\\*Mynd 1\\. Mynd lysing\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*\\*Tafla 1\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*Tafla lysing\\*$", md_lines)))
+  expect_true(any(grepl("^\\*\\*Mynd 1\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*Mynd lysing\\*$", md_lines)))
 })
 
 test_that("render_analysis_md supports a custom report name", {
@@ -205,7 +210,9 @@ test_that("render_analysis_md exposes params inside the script", {
   md_lines <- readLines(output_path, warn = FALSE)
 
   expect_true(any(grepl("^\\[1\\] \"LES_04_A1\"$", md_lines)))
-  expect_true(any(grepl("^\\*\\*Table 1\\. Report for LES_04_A1\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\[1\\] \"LES_04_A1\"$", md_lines)))
+  expect_true(any(grepl("^\\*\\*Table 1\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*Report for LES_04_A1\\*$", md_lines)))
 })
 
 test_that("md_table prints a markdown preview outside render mode", {
@@ -219,6 +226,83 @@ test_that("md_table prints a markdown preview outside render mode", {
   expect_true(any(grepl("^\\*\\*Values\\*\\*$", output)))
   expect_true(any(grepl("^\\|term\\s*\\|", output)))
   expect_true(is.character(result))
+})
+
+test_that("md_table formats APA 7 table notes in preview and render mode", {
+  output <- capture.output(
+    md_table(
+      data.frame(term = "x", value = 2),
+      caption = "Values",
+      note = "All tests were two-tailed."
+    )
+  )
+  expect_true(any(grepl("^\\*Note\\.\\* All tests were two-tailed\\.$", output)))
+
+  output_explicit <- capture.output(
+    md_table(
+      data.frame(term = "x", value = 2),
+      note = "*Note.* Already formatted."
+    )
+  )
+  expect_true(any(grepl("^\\*Note\\.\\* Already formatted\\.$", output_explicit)))
+
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "note-table.R")
+
+  writeLines(
+    c(
+      "tbl <- data.frame(a = 1)",
+      "birtir::md_table(tbl, caption = 'Noted table', note = 'Custom note text.')"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(
+    script_path,
+    output_dir = script_dir,
+    report_name = "report_note"
+  )
+
+  md_lines <- readLines(output_path, warn = FALSE)
+  expect_true(any(grepl("^\\*Note\\.\\* Custom note text\\.$", md_lines)))
+
+  table_file <- file.path(dirname(output_path), "tables", "report-note_tbl-001.md")
+  table_lines <- readLines(table_file, warn = FALSE)
+  expect_true(any(grepl("^\\*Note\\.\\* Custom note text\\.$", table_lines)))
+})
+
+test_that("md_plot formats APA 7 figure notes in preview and render mode", {
+  output <- capture.output(
+    md_plot(
+      ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) + ggplot2::geom_point(),
+      caption = "Scatter plot",
+      note = "Values measured at baseline."
+    )
+  )
+  expect_true(any(grepl("^\\*Note\\.\\* Values measured at baseline\\.$", output)))
+
+  script_dir <- withr::local_tempdir()
+  script_path <- file.path(script_dir, "note-plot.R")
+
+  writeLines(
+    c(
+      "library(ggplot2)",
+      "p <- ggplot(mtcars, aes(wt, mpg)) + geom_point()",
+      "birtir::md_plot(p, caption = 'Noted figure', note = 'Custom plot note.')"
+    ),
+    script_path
+  )
+
+  output_path <- render_analysis_md(
+    script_path,
+    output_dir = script_dir,
+    report_name = "report_fig_note"
+  )
+
+  md_lines <- readLines(output_path, warn = FALSE)
+  expect_true(any(grepl("^\\*\\*Figure 1\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*Noted figure\\*$", md_lines)))
+  expect_true(any(grepl("^\\*Note\\.\\* Custom plot note\\.$", md_lines)))
 })
 
 test_that("md_plot returns the plot object outside render mode", {
@@ -251,7 +335,8 @@ test_that("md_plot saves non-ggplot plot objects during rendering", {
   output_path <- render_analysis_md(script_path, output_dir = script_dir)
   md_lines <- readLines(output_path, warn = FALSE)
 
-  expect_true(any(grepl("^\\*\\*Figure 1\\. Custom plot\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*\\*Figure 1\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*Custom plot\\*$", md_lines)))
   expect_true(file.exists(file.path(dirname(output_path), "images", "custom-plot_fig-001.png")))
 })
 
@@ -287,7 +372,8 @@ test_that("md_plot redraws qgraph objects with plot.qgraph during rendering", {
   output_path <- render_analysis_md(script_path, output_dir = script_dir)
   md_lines <- readLines(output_path, warn = FALSE)
 
-  expect_true(any(grepl("^\\*\\*Figure 1\\. Network plot\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*\\*Figure 1\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*Network plot\\*$", md_lines)))
   expect_true(file.exists(file.path(dirname(output_path), "images", "qgraph-plot_fig-001.png")))
   expect_identical(readLines(marker_path, warn = FALSE), "plot")
 })
@@ -297,18 +383,18 @@ test_that("md_text formats inline numeric values outside render mode", {
     result <- md_text("This is _R_ = {0.1234} and _M_ = {2.5}", digits = 2)
   )
 
-  expect_identical(result, "This is _R_ = .12 and _M_ = 2.50")
-  expect_identical(output, "This is _R_ = .12 and _M_ = 2.50")
+  expect_identical(result, "This is _R_ = 0.12 and _M_ = 2.50")
+  expect_identical(output, "This is _R_ = 0.12 and _M_ = 2.50")
 })
 
-test_that("md_text can keep the leading zero when requested", {
+test_that("md_text can drop the leading zero when requested", {
   result <- md_text(
     "This is _R_ = {0.1234}",
     digits = 2,
-    drop_leading_zero = FALSE
+    drop_leading_zero = TRUE
   )
 
-  expect_identical(result, "This is _R_ = 0.12")
+  expect_identical(result, "This is _R_ = .12")
 })
 
 test_that("md_text formats p-values in APA style", {
@@ -336,7 +422,7 @@ test_that("render_analysis_md supports md_text inside scripts", {
   md_lines <- readLines(output_path, warn = FALSE)
 
   expect_true(any(grepl("^# Inline text$", md_lines)))
-  expect_true(any(grepl("^This is _R_ = \\.46$", md_lines)))
+  expect_true(any(grepl("^This is _R_ = 0\\.46$", md_lines)))
 })
 
 test_that("render_analysis_md can set decimal_mark globally for md_text", {
@@ -362,7 +448,7 @@ test_that("render_analysis_md can set decimal_mark globally for md_text", {
   md_lines <- readLines(output_path, warn = FALSE)
 
   expect_true(any(grepl("^p = ,023$", md_lines)))
-  expect_true(any(grepl("^Estimate = ,46$", md_lines)))
+  expect_true(any(grepl("^Estimate = 0,46$", md_lines)))
 })
 
 test_that("render_analysis_md reserves the md_text helper name", {
@@ -401,7 +487,8 @@ test_that("render_analysis_md renders description helper output", {
   table_path <- file.path(dirname(output_path), "tables", "description-report_tbl-001.md")
 
   expect_true(any(grepl("^# Description report$", md_lines)))
-  expect_true(any(grepl("^\\*\\*Table 1\\. Score by group\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*\\*Table 1\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*Score by group\\*$", md_lines)))
   expect_true(any(grepl("score ~ group", md_lines, fixed = TRUE)))
   expect_true(file.exists(table_path))
 })
@@ -447,7 +534,8 @@ test_that("render_analysis_md supports scripts that attach packages", {
   output_path <- render_analysis_md(script_path, output_dir = script_dir)
   md_lines <- readLines(output_path, warn = FALSE)
 
-  expect_true(any(grepl("^\\*\\*Figure 1\\. Scatter\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*\\*Figure 1\\*\\*$", md_lines)))
+  expect_true(any(grepl("^\\*Scatter\\*$", md_lines)))
   expect_true(file.exists(file.path(dirname(output_path), "images", "library-script_fig-001.png")))
 })
 

@@ -9,7 +9,7 @@ md_text(
   ...,
   digits = 2,
   style = c("apa", "plain", "p"),
-  drop_leading_zero = TRUE,
+  drop_leading_zero = FALSE,
   trailing_zeros = TRUE,
   decimal_mark = NULL,
   p_threshold = 0.001,
@@ -27,7 +27,8 @@ md_text(
 \code{"plain"} for standard decimals.}
 
 \item{drop_leading_zero}{Logical; if \code{TRUE}, values between \code{-1} and \code{1}
-are formatted without a leading zero. Defaults to \code{TRUE}.}
+are formatted without a leading zero. Defaults to \code{FALSE} (as APA 7 requires
+retaining leading zeros for numbers that can exceed 1, such as Means and SDs).}
 
 \item{trailing_zeros}{Logical; if \code{TRUE}, keep a fixed number of decimals.
 Defaults to \code{TRUE}.}

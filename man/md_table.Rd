@@ -4,7 +4,7 @@
 \alias{md_table}
 \title{Format a table for Markdown reports}
 \usage{
-md_table(x, caption = NULL, filename = NULL, digits = NULL)
+md_table(x, caption = NULL, filename = NULL, digits = NULL, note = NULL)
 }
 \arguments{
 \item{x}{A data frame or table-like object.}
@@ -15,6 +15,9 @@ md_table(x, caption = NULL, filename = NULL, digits = NULL)
 extension is added automatically.}
 
 \item{digits}{Optional number of digits for numeric columns.}
+
+\item{note}{Optional table note text. Following APA 7 guidelines, general
+notes are formatted with an italicized \verb{*Note.*} prefix if not already present.}
 }
 \value{
 Invisibly returns the saved table path during rendering, or the

@@ -10,7 +10,8 @@ md_plot(
   filename = NULL,
   width = 7,
   height = 5,
-  dpi = 300
+  dpi = 300,
+  note = NULL
 )
 }
 \arguments{
@@ -28,6 +29,9 @@ extension is added automatically.}
 \item{height}{Plot height in inches.}
 
 \item{dpi}{Plot resolution.}
+
+\item{note}{Optional figure note text. Following APA 7 guidelines, general
+notes are formatted with an italicized \verb{*Note.*} prefix if not already present.}
 }
 \value{
 Invisibly returns the saved plot path during rendering, or the plot

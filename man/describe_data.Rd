@@ -36,3 +36,13 @@ summaries, relationship summaries such as \code{y ~ x} and \code{y ~ x + g},
 interactions such as \code{y ~ x:g}, and random-intercept-style summaries such
 as \code{x ~ (1 | g)}.
 }
+\examples{
+df <- data.frame(
+  y = c(12, 15, 18, 22, 25, 30),
+  group = factor(c("A", "A", "A", "B", "B", "B")),
+  x = c(1, 2, 3, 4, 5, 6)
+)
+describe_data(df, y ~ 1)
+describe_data(df, y ~ group)
+describe_data(df, y ~ x)
+}

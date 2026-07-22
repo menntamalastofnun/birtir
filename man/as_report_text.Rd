@@ -17,3 +17,8 @@ A single character string.
 \description{
 Convert a birtir description to report text
 }
+\examples{
+df <- data.frame(score = c(10, 20, 30))
+desc <- describe_data(df, score ~ 1)
+as_report_text(desc)
+}

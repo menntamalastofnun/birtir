@@ -108,10 +108,11 @@ test_that("variable types are read from R classes", {
 })
 
 test_that("fmt_num formats APA and plain numbers", {
-  expect_identical(fmt_num(c(0.123, -0.5, 1), digits = 2), c(".12", "-.50", "1.00"))
+  expect_identical(fmt_num(c(0.123, -0.5, 1), digits = 2), c("0.12", "-0.50", "1.00"))
+  expect_identical(fmt_num(c(0.123, -0.5, 1), digits = 2, drop_leading_zero = TRUE), c(".12", "-.50", "1.00"))
   expect_identical(fmt_num(0.123, digits = 2, style = "plain"), "0.12")
-  expect_identical(fmt_num(0.1, digits = 2, trailing_zeros = FALSE), ".1")
-  expect_identical(fmt_num(0.123, digits = 2, decimal_mark = ","), ",12")
+  expect_identical(fmt_num(0.1, digits = 2, trailing_zeros = FALSE, drop_leading_zero = TRUE), ".1")
+  expect_identical(fmt_num(0.123, digits = 2, decimal_mark = ","), "0,12")
   expect_identical(fmt_num(NA_real_), "NA")
 })
 

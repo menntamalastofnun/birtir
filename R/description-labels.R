@@ -12,6 +12,9 @@
 #'
 #' @return A `description_labels` object.
 #' @export
+#'
+#' @examples
+#' description_labels(table = "Tafla", figure = "Mynd")
 description_labels <- function(table = "Table",
                            figure = "Figure",
                            variable = "Variable",

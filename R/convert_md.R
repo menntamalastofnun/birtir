@@ -10,6 +10,12 @@
 #'
 #' @return Invisibly returns the output file path.
 #' @export
+#'
+#' @examples
+#' \dontrun{
+#' convert_md("report.md", to = "docx")
+#' convert_md("report.md", to = "html")
+#' }
 convert_md <- function(path,
                        to = c("docx", "html", "pdf"),
                        output = NULL) {

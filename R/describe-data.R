@@ -17,6 +17,16 @@
 #'
 #' @return A `birtir_description` object.
 #' @export
+#'
+#' @examples
+#' df <- data.frame(
+#'   y = c(12, 15, 18, 22, 25, 30),
+#'   group = factor(c("A", "A", "A", "B", "B", "B")),
+#'   x = c(1, 2, 3, 4, 5, 6)
+#' )
+#' describe_data(df, y ~ 1)
+#' describe_data(df, y ~ group)
+#' describe_data(df, y ~ x)
 describe_data <- function(data,
                           formula,
                           labels = description_labels(),

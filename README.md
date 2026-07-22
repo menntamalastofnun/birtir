@@ -163,7 +163,7 @@ purrr::walk2(
 The same helpers also work outside rendering:
 
 ``` r
-coef_tbl |> birtir::md_table(caption = "Coefficient table", digits = 3)
+coef_tbl |> birtir::md_table(caption = "Coefficient table", digits = 3, note = "Linear regression using mtcars dataset.")
 birtir::md_plot(p, caption = "MPG vs weight")
 birtir::md_text("Model fit: _R_ = {0.4567}, p {0.0234}", style = "apa", digits = 2)
 birtir::fmt_num(c(0.4567, 2.5), digits = 2)
@@ -172,8 +172,10 @@ birtir::fmt_p(c(0.0234, 0.0004))
 
 Outside `render_analysis_md()`:
 
-- `birtir::md_table()` prints a pipe-table Markdown preview
-- `birtir::md_plot()` prints the ggplot normally
+- `birtir::md_table()` prints a pipe-table Markdown preview with
+  optional APA 7 table notes
+- `birtir::md_plot()` prints the ggplot normally with optional APA 7
+  figure notes
 - `birtir::md_text()` prints Markdown-ready inline text with glue
   formatting
 - `birtir::fmt_num()` returns formatted numbers for inline reporting

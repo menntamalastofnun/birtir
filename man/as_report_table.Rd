@@ -17,3 +17,8 @@ A tibble suitable for report rendering.
 \description{
 Convert a birtir description to a report table
 }
+\examples{
+df <- data.frame(score = c(10, 20, 30))
+desc <- describe_data(df, score ~ 1)
+as_report_table(desc)
+}

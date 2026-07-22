@@ -21,3 +21,9 @@ Invisibly returns the output file path.
 \code{convert_md()} converts an existing \code{.md} file to another output format by
 calling the Pandoc executable available on the current system.
 }
+\examples{
+\dontrun{
+convert_md("report.md", to = "docx")
+convert_md("report.md", to = "html")
+}
+}

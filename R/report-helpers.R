@@ -7,6 +7,11 @@
 #'
 #' @return A single character string.
 #' @export
+#'
+#' @examples
+#' df <- data.frame(score = c(10, 20, 30))
+#' desc <- describe_data(df, score ~ 1)
+#' as_report_text(desc)
 as_report_text <- function(x, ...) {
   UseMethod("as_report_text")
 }
@@ -14,7 +19,13 @@ as_report_text <- function(x, ...) {
 #' @export
 as_report_text.birtir_description <- function(x, ...) {
   lines <- utils::capture.output(print(x))
-  paste(lines, collapse = "\n")
+  text <- paste(lines, collapse = "\n")
+  text <- gsub("\\bMean = ", "*M* = ", text)
+  text <- gsub("\\bSD = ", "*SD* = ", text)
+  text <- gsub("\\bSE = ", "*SE* = ", text)
+  text <- gsub("\\bn = ", "*n* = ", text)
+  text <- gsub("\\br = ", "*r* = ", text)
+  text
 }
 
 #' Convert a birtir description to a report table
@@ -24,6 +35,11 @@ as_report_text.birtir_description <- function(x, ...) {
 #'
 #' @return A tibble suitable for report rendering.
 #' @export
+#'
+#' @examples
+#' df <- data.frame(score = c(10, 20, 30))
+#' desc <- describe_data(df, score ~ 1)
+#' as_report_table(desc)
 as_report_table <- function(x, ...) {
   UseMethod("as_report_table")
 }

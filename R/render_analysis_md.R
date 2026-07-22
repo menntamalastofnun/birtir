@@ -244,6 +244,8 @@ validate_report_labels <- function(labels) {
 #' @param filename Optional file stem used during rendering. The `.md`
 #'   extension is added automatically.
 #' @param digits Optional number of digits for numeric columns.
+#' @param note Optional table note text. Following APA 7 guidelines, general
+#'   notes are formatted with an italicized `*Note.*` prefix if not already present.
 #'
 #' @return Invisibly returns the saved table path during rendering, or the
 #'   Markdown table text outside rendering.
@@ -252,7 +254,7 @@ validate_report_labels <- function(labels) {
 #' During rendering, filenames are saved into the active report's `tables/`
 #' directory. Outside rendering, `md_table()` is a lightweight preview helper.
 #' @export
-md_table <- function(x, caption = NULL, filename = NULL, digits = NULL) {
+md_table <- function(x, caption = NULL, filename = NULL, digits = NULL, note = NULL) {
   out <- x
 
   if (!is.null(digits) && is.data.frame(out)) {
@@ -273,6 +275,12 @@ md_table <- function(x, caption = NULL, filename = NULL, digits = NULL) {
     }
 
     preview <- c(preview, table_md)
+
+    formatted_note <- format_apa_note(note)
+    if (length(formatted_note) > 0) {
+      preview <- c(preview, "", formatted_note)
+    }
+
     cat(paste(preview, collapse = "\n"), "\n", sep = "")
 
     return(invisible(table_md))
@@ -282,7 +290,8 @@ md_table <- function(x, caption = NULL, filename = NULL, digits = NULL) {
     state = state,
     table_md = table_md,
     caption = caption,
-    filename = filename
+    filename = filename,
+    note = note
   ))
 }
 
@@ -303,6 +312,8 @@ md_table <- function(x, caption = NULL, filename = NULL, digits = NULL) {
 #' @param width Plot width in inches.
 #' @param height Plot height in inches.
 #' @param dpi Plot resolution.
+#' @param note Optional figure note text. Following APA 7 guidelines, general
+#'   notes are formatted with an italicized `*Note.*` prefix if not already present.
 #'
 #' @return Invisibly returns the saved plot path during rendering, or the plot
 #'   object outside rendering.
@@ -312,11 +323,18 @@ md_table <- function(x, caption = NULL, filename = NULL, digits = NULL) {
 #' behaves like a normal plot preview helper otherwise.
 #' @export
 md_plot <- function(plot, caption = NULL, filename = NULL,
-                    width = 7, height = 5, dpi = 300) {
+                    width = 7, height = 5, dpi = 300, note = NULL) {
   state <- birtir_get_render_state()
 
   if (is.null(state)) {
     draw_md_plot(plot)
+    if (!is.null(caption)) {
+      cat(paste0("*", caption, "*"), "\n")
+    }
+    formatted_note <- format_apa_note(note)
+    if (length(formatted_note) > 0) {
+      cat(paste(formatted_note, collapse = "\n"), "\n", sep = "")
+    }
     return(invisible(plot))
   }
 
@@ -327,7 +345,8 @@ md_plot <- function(plot, caption = NULL, filename = NULL,
     filename = filename,
     width = width,
     height = height,
-    dpi = dpi
+    dpi = dpi,
+    note = note
   ))
 }
 
@@ -353,7 +372,7 @@ md_text <- function(text,
                     ...,
                     digits = 2,
                     style = c("apa", "plain", "p"),
-                    drop_leading_zero = TRUE,
+                    drop_leading_zero = FALSE,
                     trailing_zeros = TRUE,
                     decimal_mark = NULL,
                     p_threshold = 0.001,
@@ -480,7 +499,8 @@ format_md_text_value <- function(value, digits, style, drop_leading_zero,
 #' @param style Number formatting style. Use `"apa"` for APA-style decimals or
 #'   `"plain"` for standard decimals.
 #' @param drop_leading_zero Logical; if `TRUE`, values between `-1` and `1`
-#'   are formatted without a leading zero. Defaults to `TRUE`.
+#'   are formatted without a leading zero. Defaults to `FALSE` (as APA 7 requires
+#'   retaining leading zeros for numbers that can exceed 1, such as Means and SDs).
 #' @param trailing_zeros Logical; if `TRUE`, keep a fixed number of decimals.
 #'   Defaults to `TRUE`.
 #' @param decimal_mark Decimal separator to use. Choose `"."` or `","`.
@@ -491,7 +511,7 @@ format_md_text_value <- function(value, digits, style, drop_leading_zero,
 fmt_num <- function(x,
                     digits = 2,
                     style = c("apa", "plain"),
-                    drop_leading_zero = TRUE,
+                    drop_leading_zero = FALSE,
                     trailing_zeros = TRUE,
                     decimal_mark = ".") {
   validate_numeric_vector(x, "x")
@@ -564,7 +584,7 @@ format_md_value <- function(x, digits, style, drop_leading_zero,
     return(fmt_p(
       x = x,
       digits = digits,
-      drop_leading_zero = drop_leading_zero,
+      drop_leading_zero = TRUE,
       decimal_mark = decimal_mark,
       p_threshold = p_threshold
     ))
@@ -642,7 +662,7 @@ format_one_p_value <- function(x, digits, drop_leading_zero, decimal_mark, thres
 
 
 
-write_md_table <- function(state, table_md, caption = NULL, filename = NULL) {
+write_md_table <- function(state, table_md, caption = NULL, filename = NULL, note = NULL) {
   state$table_index <- state$table_index + 1L
 
   if (is.null(filename)) {
@@ -651,27 +671,44 @@ write_md_table <- function(state, table_md, caption = NULL, filename = NULL) {
     filename <- paste0(sanitize_name(filename), ".md")
   }
 
+  formatted_note <- format_apa_note(note)
+  table_lines <- table_md
+  if (length(formatted_note) > 0) {
+    table_lines <- c(table_lines, "", formatted_note)
+  }
+
   table_path <- fs::path(state$tables_dir, filename)
-  writeLines(table_md, table_path)
+  writeLines(table_lines, table_path)
 
   if (!is.null(caption)) {
     add_md_line(
       state,
-      paste0("**", state$labels$table, " ", state$table_index, ". ", caption, "**")
+      paste0("**", state$labels$table, " ", state$table_index, "**")
     )
+    add_md_line(
+      state,
+      paste0("*", caption, "*")
+    )
+    add_md_line(state, "")
   }
 
   rel_path <- fs::path_rel(table_path, start = state$report_dir)
   add_md_line(state, paste0("[Table: ", filename, "](", rel_path, ")"))
   add_md_line(state, "")
   add_md_line(state, table_md)
+  if (length(formatted_note) > 0) {
+    add_md_line(state, "")
+    for (fn in formatted_note) {
+      add_md_line(state, fn)
+    }
+  }
   add_md_line(state, "")
 
   invisible(table_path)
 }
 
 write_md_plot <- function(state, plot, caption = NULL, filename = NULL,
-                          width = 7, height = 5, dpi = 300) {
+                          width = 7, height = 5, dpi = 300, note = NULL) {
   state$plot_index <- state$plot_index + 1L
 
   if (is.null(filename)) {
@@ -693,12 +730,25 @@ write_md_plot <- function(state, plot, caption = NULL, filename = NULL,
   if (!is.null(caption)) {
     add_md_line(
       state,
-      paste0("**", state$labels$figure, " ", state$plot_index, ". ", caption, "**")
+      paste0("**", state$labels$figure, " ", state$plot_index, "**")
     )
+    add_md_line(
+      state,
+      paste0("*", caption, "*")
+    )
+    add_md_line(state, "")
   }
 
   rel_path <- fs::path_rel(plot_path, start = state$report_dir)
   add_md_line(state, paste0("![](", rel_path, ")"))
+
+  formatted_note <- format_apa_note(note)
+  if (length(formatted_note) > 0) {
+    add_md_line(state, "")
+    for (fn in formatted_note) {
+      add_md_line(state, fn)
+    }
+  }
   add_md_line(state, "")
 
   invisible(plot_path)
@@ -875,4 +925,41 @@ format_eval_error <- function(expr, script, condition, srcref = attr(expr, "srcr
   }
 
   paste0("Error while evaluating ", script, ": ", conditionMessage(condition))
+}
+
+format_apa_note <- function(note = NULL) {
+  if (is.null(note) || length(note) == 0 || all(is.na(note))) {
+    return(character())
+  }
+
+  lines <- unlist(strsplit(as.character(note), "\n", fixed = TRUE))
+  lines <- trimws(lines)
+  lines <- lines[!is.na(lines) & lines != ""]
+
+  if (length(lines) == 0) {
+    return(character())
+  }
+
+  format_line <- function(line, is_first = FALSE) {
+    if (grepl("^\\*Note\\.\\*\\s*", line)) {
+      return(line)
+    }
+    if (grepl("^Note\\.\\s*", line, ignore.case = TRUE)) {
+      return(sub("^Note\\.\\s*", "*Note.* ", line, ignore.case = TRUE))
+    }
+    if (is_first) {
+      if (grepl("^(\\*?p\\*?\\s*<|\\^[a-z0-9]|\\*+\\s)", line)) {
+        return(line)
+      }
+      return(paste0("*Note.* ", line))
+    }
+    line
+  }
+
+  formatted <- character(length(lines))
+  for (i in seq_along(lines)) {
+    formatted[i] <- format_line(lines[i], is_first = (i == 1L))
+  }
+
+  formatted
 }
