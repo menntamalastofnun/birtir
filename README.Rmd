@@ -182,10 +182,37 @@ Outside `render_analysis_md()`:
 
 - `birtir::md_table()` prints a pipe-table Markdown preview with optional APA 7 table notes
 - `birtir::md_plot()` prints the ggplot normally with optional APA 7 figure notes
-- `birtir::md_text()` prints Markdown-ready inline text with glue formatting
+- `birtir::md_text()` prints Markdown-ready inline text with glue formatting and LaTeX math support
 - `birtir::fmt_num()` returns formatted numbers for inline reporting
 - `birtir::fmt_p()` returns APA-style p-value strings such as `= .023` or `< .001`
+- `birtir::formula_to_latex()` converts R formulas into compact LaTeX equations
+- `birtir::lavaan_to_latex()` converts CFA and SEM lavaan model syntax into LaTeX equations
 - `birtir::convert_md()` converts an existing `.md` file with Pandoc
+
+## LaTeX math and formulas
+
+`md_text()` supports standard LaTeX math formulas (`$...$` for inline math and `$$...$$` for display math). You can also dynamically convert R model formulas and `lavaan` CFA/SEM syntax into LaTeX equations using `formula_to_latex()` and `lavaan_to_latex()`:
+
+``` r
+# Convert R formulas directly to LaTeX equations
+birtir::formula_to_latex(mpg ~ wt + (1 | cyl))
+#> "$mpg_i = \\beta_0 + \\beta_{wt} wt_i + b_{0,cyl[i]} + \\epsilon_i$"
+
+# Convert CFA / lavaan model syntax to LaTeX
+birtir::lavaan_to_latex("Visual =~ x1 + x2 + x3")
+#> "$x1_i = \\lambda_{x1} Visual_i + \\epsilon_{x1,i}$"
+#> "$x2_i = \\lambda_{x2} Visual_i + \\epsilon_{x2,i}$"
+#> "$x3_i = \\lambda_{x3} Visual_i + \\epsilon_{x3,i}$"
+
+# Embed LaTeX equations directly in md_text()
+birtir::md_text("Model equation: {birtir::formula_to_latex(mpg ~ wt + (1 | cyl))}")
+#> Model equation: $mpg_i = \beta_0 + \beta_{wt} wt_i + b_{0,cyl[i]} + \epsilon_i$
+
+# Direct inline LaTeX math
+birtir::md_text(r"(Estimated effect: $\hat{\beta}_1 = 0.45$, $p < .001$)")
+```
+
+
 
 ## Custom labels
 

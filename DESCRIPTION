@@ -25,9 +25,11 @@ Imports:
     rlang,
     tibble,
     utils
-Suggests:
+Suggests: 
+    rmarkdown,
     testthat (>= 3.0.0),
     withr
+VignetteBuilder: knitr
 Config/testthat/edition: 3
 URL: https://github.com/auv2/birtir
 BugReports: https://github.com/auv2/birtir/issues

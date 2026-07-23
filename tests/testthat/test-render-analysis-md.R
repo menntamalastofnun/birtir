@@ -555,7 +555,7 @@ test_that("render_analysis_md captures messages, warnings, and errors", {
   )
 
   expect_error(
-    render_analysis_md(script_path, output_dir = script_dir),
+    render_analysis_md(script_path, output_dir = script_dir, show_messages = TRUE),
     "near line 3: boom"
   )
 
@@ -565,6 +565,13 @@ test_that("render_analysis_md captures messages, warnings, and errors", {
   expect_true(any(grepl("^Message: hello$", md_lines)))
   expect_true(any(grepl("^Warning: careful$", md_lines)))
   expect_true(any(grepl("^Error: boom$", md_lines)))
+
+  # Default show_messages = FALSE suppresses messages from output report
+  msg_script_path <- file.path(script_dir, "msg_test.R")
+  writeLines("message('hidden message')", msg_script_path)
+  msg_md_path <- render_analysis_md(msg_script_path, output_dir = script_dir)
+  msg_lines <- readLines(msg_md_path, warn = FALSE)
+  expect_false(any(grepl("hidden message", msg_lines)))
 })
 
 test_that("convert_md rejects non-markdown input", {
@@ -683,6 +690,39 @@ test_that("convert_md strips redundant table-file links only in the temporary ex
   expect_false(identical(call_args$input, "report.md"))
   expect_true(grepl("^report-convert-.*\\.md$", call_args$input))
 })
+
+test_that("convert_md strips custom table-file links in temporary export copy", {
+  input_dir <- withr::local_tempdir()
+  md_path <- file.path(input_dir, "report.md")
+  original_lines <- c(
+    "**Tafla 1. Custom Table**",
+    "",
+    "[Table: custom-summary.md](tables/custom-summary.md)",
+    "",
+    "|col|value|",
+    "|---|---|",
+    "|x|1|"
+  )
+  writeLines(original_lines, md_path)
+
+  temp_lines <- NULL
+
+  local_mocked_bindings(
+    birtir_find_pandoc = function() "C:/Pandoc/pandoc.exe",
+    birtir_run_pandoc = function(pandoc, input, output, workdir) {
+      temp_lines <<- readLines(file.path(workdir, input), warn = FALSE)
+      0L
+    },
+    .package = "birtir"
+  )
+
+  convert_md(md_path, to = "html")
+
+  expect_false(any(grepl("^\\[Table:", temp_lines)))
+  expect_true(any(grepl("^\\*\\*Tafla 1\\.", temp_lines)))
+  expect_true(any(grepl("^\\|col\\|value\\|$", temp_lines)))
+})
+
 
 test_that("render_analysis_md supports nested rendering without state pollution", {
   script_dir <- withr::local_tempdir()

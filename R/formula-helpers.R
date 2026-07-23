@@ -99,8 +99,18 @@ formula_to_latex <- function(formula,
                              notation = c("expanded", "matrix"),
                              family = "gaussian",
                              link = NULL) {
-  validate_formula(formula)
   notation <- match.arg(notation)
+
+  if (is_lavaan_model_input(formula)) {
+    return(lavaan_to_latex(
+      model = formula,
+      notation = notation,
+      subscript = subscript,
+      error_term = error_term
+    ))
+  }
+
+  validate_formula(formula)
   validate_character_scalar(family, "family")
 
   if (!is.logical(subscript) || length(subscript) != 1 || is.na(subscript)) {
@@ -117,6 +127,7 @@ formula_to_latex <- function(formula,
 
   parsed <- parse_model_formula(formula)
   link <- link %||% default_link(family)
+
 
   if (identical(notation, "matrix")) {
     return(formula_to_matrix_latex(parsed, family = family, link = link))
@@ -355,3 +366,138 @@ latex_link <- function(link, mu) {
 `%||%` <- function(x, y) {
   if (is.null(x)) y else x
 }
+
+#' Convert lavaan CFA/SEM model syntax to LaTeX equations
+#'
+#' `lavaan_to_latex()` turns lavaan-style model specifications (such as latent
+#' factor definitions `F =~ x1 + x2 + x3` and covariances `F1 ~~ F2`) into
+#' compact LaTeX equations for reports and notes.
+#'
+#' @param model A character string or formula containing lavaan-style model syntax.
+#' @param notation Equation notation. Use `"expanded"` for observation-level
+#'   indicator and regression equations, or `"matrix"` for measurement-matrix notation.
+#' @param subscript Logical; if `TRUE`, add `_i` to terms and indicators.
+#' @param error_term Logical; if `TRUE`, add residual error terms `\epsilon_{x,i}`.
+#'
+#' @return A character vector of LaTeX equations.
+#' @export
+#'
+#' @examples
+#' lavaan_to_latex("Visual =~ x1 + x2 + x3")
+#' lavaan_to_latex("Visual =~ x1 + x2 + x3\n Text =~ x4 + x5 + x6\n Visual ~~ Text")
+#' lavaan_to_latex("F =~ y1 + y2 + y3", notation = "matrix")
+lavaan_to_latex <- function(model,
+                            notation = c("expanded", "matrix"),
+                            subscript = TRUE,
+                            error_term = TRUE) {
+  notation <- match.arg(notation)
+
+  if (!is.logical(subscript) || length(subscript) != 1 || is.na(subscript)) {
+    cli::cli_abort("`subscript` must be `TRUE` or `FALSE`.")
+  }
+
+  if (!is.logical(error_term) || length(error_term) != 1 || is.na(error_term)) {
+    cli::cli_abort("`error_term` must be `TRUE` or `FALSE`.")
+  }
+
+  parsed <- parse_lavaan_model(model)
+
+  if (length(parsed$latents) == 0 && length(parsed$regressions) == 0) {
+    cli::cli_abort("No latent factor ('=~') or regression ('~') terms found in lavaan model.")
+  }
+
+  if (identical(notation, "matrix")) {
+    has_cov <- length(parsed$covariances) > 0
+    cov_text <- if (has_cov) ";\\ \\Sigma = \\Lambda \\Psi \\Lambda^T + \\Theta" else ""
+    return(paste0("$X = \\Lambda \\eta + \\epsilon", cov_text, "$"))
+  }
+
+  sub_i <- if (isTRUE(subscript)) "_i" else ""
+  indicators <- unique(unlist(parsed$latents, use.names = FALSE))
+  eqs <- character()
+
+  for (ind in indicators) {
+    factors_for_ind <- names(parsed$latents)[vapply(parsed$latents, function(l) ind %in% l, logical(1))]
+    terms <- vapply(factors_for_ind, function(f) {
+      lab <- if (length(factors_for_ind) > 1) paste0("\\lambda_{", ind, ",", f, "}") else paste0("\\lambda_{", ind, "}")
+      paste0(lab, " ", f, sub_i)
+    }, character(1))
+
+    rhs <- paste(terms, collapse = " + ")
+    err <- if (isTRUE(error_term)) paste0(" + \\epsilon_{", ind, if (isTRUE(subscript)) ",i" else "", "}") else ""
+    eqs <- c(eqs, paste0("$", ind, sub_i, " = ", rhs, err, "$"))
+  }
+
+  if (length(parsed$regressions) > 0) {
+    for (reg in parsed$regressions) {
+      rhs_terms <- trimws(strsplit(reg$rhs, "+", fixed = TRUE)[[1]])
+      terms <- vapply(rhs_terms, function(t) {
+        paste0("\\gamma_{", t, "} ", t, sub_i)
+      }, character(1))
+      rhs <- paste(terms, collapse = " + ")
+      err <- if (isTRUE(error_term)) paste0(" + \\zeta_{", reg$lhs, if (isTRUE(subscript)) ",i" else "", "}") else ""
+      eqs <- c(eqs, paste0("$", reg$lhs, sub_i, " = ", rhs, err, "$"))
+    }
+  }
+
+  if (length(parsed$covariances) > 0) {
+    for (cov in parsed$covariances) {
+      if (identical(cov[[1]], cov[[2]])) {
+        eqs <- c(eqs, paste0("$\\operatorname{Var}(\\epsilon_{", cov[[1]], "}) = \\theta_{", cov[[1]], "}$"))
+      } else {
+        eqs <- c(eqs, paste0("$\\operatorname{Cov}(", cov[[1]], ", ", cov[[2]], ") = \\psi_{", cov[[1]], ",", cov[[2]], "}$"))
+      }
+    }
+  }
+
+  eqs
+}
+
+is_lavaan_model_input <- function(x) {
+  if (is.character(x)) {
+    return(any(grepl("=~|~~", x)))
+  }
+  if (inherits(x, "formula")) {
+    txt <- paste(deparse(x), collapse = "")
+    return(any(grepl("=~|~~", txt)))
+  }
+  FALSE
+}
+
+parse_lavaan_model <- function(model) {
+  if (inherits(model, "formula")) {
+    model <- paste(deparse(model), collapse = "")
+  }
+
+  lines <- unlist(strsplit(as.character(model), "[\n;]"))
+  lines <- sub("#.*$", "", lines)
+  lines <- trimws(lines)
+  lines <- lines[!is.na(lines) & lines != ""]
+
+  latents <- list()
+  covariances <- list()
+  regressions <- list()
+
+  for (line in lines) {
+    if (grepl("=~", line, fixed = TRUE)) {
+      parts <- trimws(strsplit(line, "=~", fixed = TRUE)[[1]])
+      factor_name <- parts[[1]]
+      rhs_terms <- trimws(strsplit(parts[[2]], "+", fixed = TRUE)[[1]])
+      clean_terms <- vapply(rhs_terms, function(t) {
+        sub("^.*\\*\\s*", "", t)
+      }, character(1))
+      latents[[factor_name]] <- unique(c(latents[[factor_name]], clean_terms))
+    } else if (grepl("~~", line, fixed = TRUE)) {
+      parts <- trimws(strsplit(line, "~~", fixed = TRUE)[[1]])
+      covariances[[length(covariances) + 1L]] <- c(parts[[1]], parts[[2]])
+    } else if (grepl("~", line, fixed = TRUE)) {
+      parts <- trimws(strsplit(line, "~", fixed = TRUE)[[1]])
+      if (!identical(parts[[2]], "1")) {
+        regressions[[length(regressions) + 1L]] <- list(lhs = parts[[1]], rhs = parts[[2]])
+      }
+    }
+  }
+
+  list(latents = latents, covariances = covariances, regressions = regressions)
+}
+

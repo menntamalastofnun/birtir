@@ -1,0 +1,178 @@
+---
+title: "Statistical Descriptions and Inline Visualizations"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Statistical Descriptions and Inline Visualizations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(birtir)
+```
+
+## Overview
+
+`birtir` provides formula-driven statistical description tools to summarize variables, group distributions, bivariate relationships, and random-intercept groupings prior to or during report generation.
+
+This vignette covers:
+
+- `describe_data()`
+- `as_report_text()`
+- `as_report_table()`
+- Compact inline text graphics: `inline_hist()`, `inline_boxplot()`, `inline_bar()`, `inline_forest()`, `inline_scatter()`
+- Formatting helpers: `fmt_num()`, `fmt_p()`
+
+---
+
+## Formula-based Descriptions with `describe_data()`
+
+### 1. Univariate Description (`x ~ 1`)
+
+Summarize a single continuous or categorical variable:
+
+```{r}
+df <- data.frame(
+  score = c(41, 53, 49, 52, NA, 47, 60, 55, 38, 44),
+  group = factor(c("A", "A", "A", "B", "B", "B", "A", "B", "A", "B"))
+)
+
+# Continuous univariate summary
+desc_uni <- describe_data(df, score ~ 1)
+print(desc_uni)
+```
+
+### 2. Grouped Continuous Summary (`y ~ group`)
+
+Summarize continuous distributions across categorical groups:
+
+```{r}
+desc_grp <- describe_data(df, score ~ group)
+print(desc_grp)
+```
+
+### 3. Additive and Interaction Terms (`y ~ g + h` and `y ~ g:h`)
+
+Additive terms provide separate group summaries; interaction terms compute crossed grouping combinations:
+
+```{r}
+df2 <- data.frame(
+  score = c(12, 15, 18, 22, 25, 30, 28, 35),
+  group = factor(c("A", "A", "A", "A", "B", "B", "B", "B")),
+  condition = factor(c("Low", "Low", "High", "High", "Low", "Low", "High", "High"))
+)
+
+# Additive grouped summary
+describe_data(df2, score ~ group + condition)
+
+# Crossed interaction summary
+describe_data(df2, score ~ group:condition)
+```
+
+### 4. Continuous Bivariate Relationships (`y ~ x`)
+
+Compute correlations, regression slopes, and 95% confidence intervals:
+
+```{r}
+df_rel <- data.frame(
+  x = c(1, 2, 3, 4, 5, 6),
+  y = c(10, 14, 19, 21, 28, 32)
+)
+
+desc_rel <- describe_data(df_rel, y ~ x)
+print(desc_rel)
+```
+
+### 5. Random-Intercept Groupings (`y ~ (1 | group)`)
+
+Compact forest-style summaries for hierarchical or grouped grouping factors:
+
+```{r}
+describe_data(df, score ~ (1 | group))
+```
+
+---
+
+## Extracting Report Text and Report Tables
+
+Convert any `birtir_description` object directly into report-ready text or structured tibbles:
+
+```{r}
+# Convert to formatted text with APA-style italicized statistics
+as_report_text(desc_uni)
+
+# Convert to a tidy report table
+as_report_table(desc_grp)
+```
+
+Inside `render_analysis_md()`, you can pass these directly to `md_text()` and `md_table()`:
+
+```r
+desc <- describe_data(df, score ~ group)
+md_text(as_report_text(desc))
+md_table(as_report_table(desc), caption = "Score by Group")
+```
+
+---
+
+## Text-Based Inline Graphics
+
+`birtir` includes zero-dependency, character-rendered plot helpers for console previews and Markdown output.
+
+### Inline Histogram (`inline_hist`)
+
+```{r}
+inline_hist(df$score[!is.na(df$score)], n_bins = 5)
+```
+
+### Inline Boxplot (`inline_boxplot`)
+
+```{r}
+inline_boxplot(df$score[!is.na(df$score)], width = 30)
+```
+
+### Inline Bar Chart (`inline_bar`)
+
+```{r}
+inline_bar(table(df$group), width = 15, digits = 0)
+```
+
+### Inline Scatter Plot (`inline_scatter`)
+
+```{r}
+inline_scatter(df_rel$x, df_rel$y, width = 20, height = 5)
+```
+
+### Inline Forest Plot (`inline_forest`)
+
+```{r}
+inline_forest(
+  estimate = c(x1 = 0.31, x2 = -0.15),
+  ci_low = c(0.12, -0.35),
+  ci_high = c(0.50, 0.05),
+  n = c(100, 100),
+  width = 12
+)
+```
+
+---
+
+## Formatting Numbers and p-Values
+
+Format numbers for reporting with APA 7 guidelines:
+
+```{r}
+# APA-style numbers (optional leading zero suppression)
+fmt_num(c(0.123, -0.456, 12.0), digits = 2)
+fmt_num(0.123, digits = 2, drop_leading_zero = TRUE)
+
+# APA-style p-values
+fmt_p(c(0.042, 0.0003, NA))
+```

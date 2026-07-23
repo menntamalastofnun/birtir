@@ -98,6 +98,30 @@ test_that("formula_to_latex validates options", {
   )
 })
 
+test_that("lavaan_to_latex formats CFA and SEM model equations", {
+  single <- lavaan_to_latex("F1 =~ y1 + y2 + y3")
+  expect_length(single, 3)
+  expect_identical(single[[1]], "$y1_i = \\lambda_{y1} F1_i + \\epsilon_{y1,i}$")
+
+  cfa <- lavaan_to_latex("Visual =~ x1 + x2 + x3\n Text =~ x4 + x5 + x6\n Visual ~~ Text")
+  expect_length(cfa, 7)
+  expect_true(any(grepl("Visual_i", cfa)))
+  expect_true(any(grepl("Text_i", cfa)))
+  expect_true(any(grepl("Cov", cfa, fixed = TRUE)))
+
+  matrix_cfa <- lavaan_to_latex("F =~ y1 + y2", notation = "matrix")
+  expect_identical(matrix_cfa, "$X = \\Lambda \\eta + \\epsilon$")
+
+  routed <- formula_to_latex("Visual =~ x1 + x2")
+  expect_length(routed, 2)
+  expect_true(any(grepl("Visual_i", routed)))
+
+  with_comments <- lavaan_to_latex("F =~ y1 + y2 # inline comment\n # header comment")
+  expect_length(with_comments, 2)
+  expect_identical(with_comments[[1]], "$y1_i = \\lambda_{y1} F_i + \\epsilon_{y1,i}$")
+})
+
+
 test_that("variable types are read from R classes", {
   expect_identical(birtir:::read_variable_type(c(1, 2, 3)), "continuous")
   expect_identical(birtir:::read_variable_type(1:3), "continuous")

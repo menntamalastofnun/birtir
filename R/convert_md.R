@@ -93,14 +93,42 @@ birtir_run_pandoc <- function(pandoc, input, output, workdir) {
   old_wd <- setwd(workdir)
   on.exit(setwd(old_wd), add = TRUE)
 
+  args <- c(
+    shQuote(input),
+    "-o",
+    shQuote(output)
+  )
+
+  if (identical(tolower(tools::file_ext(output)), "pdf")) {
+    pdf_engine <- birtir_find_pdf_engine()
+    if (nzchar(pdf_engine)) {
+      args <- c(args, paste0("--pdf-engine=", shQuote(pdf_engine)))
+    }
+  }
+
   system2(
     command = pandoc,
-    args = c(
-      shQuote(input),
-      "-o",
-      shQuote(output)
-    )
+    args = args
   )
+}
+
+birtir_find_pdf_engine <- function() {
+  home_tinytex <- file.path(Sys.getenv("HOME"), ".TinyTeX", "bin", "x86_64-linux", "xelatex")
+  if (file.exists(home_tinytex)) {
+    return(home_tinytex)
+  }
+
+  tinytex_sys <- Sys.which("xelatex")
+  if (nzchar(tinytex_sys)) {
+    return(tinytex_sys)
+  }
+
+  lualatex_sys <- Sys.which("lualatex")
+  if (nzchar(lualatex_sys)) {
+    return(lualatex_sys)
+  }
+
+  Sys.which("pdflatex")
 }
 
 birtir_prepare_md_for_conversion <- function(input_path) {
@@ -125,9 +153,10 @@ birtir_prepare_md_for_conversion <- function(input_path) {
 
 birtir_strip_export_only_lines <- function(lines) {
   keep <- !grepl(
-    "^\\[Table:\\s+[^]]+_tbl-\\d+\\.md\\]\\([^)]*tables/[^)]+_tbl-\\d+\\.md\\)$",
+    "^\\[Table:\\s+[^]]+\\.md\\]\\([^)]*tables/[^)]+\\.md\\)$",
     trimws(lines)
   )
 
   lines[keep]
 }
+

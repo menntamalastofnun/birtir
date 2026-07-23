@@ -1,0 +1,154 @@
+---
+title: "Rendering Analysis Scripts and Exporting Reports"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Rendering Analysis Scripts and Exporting Reports}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(birtir)
+library(ggplot2)
+```
+
+## Overview
+
+`birtir` provides a plain-Markdown render engine for R analysis scripts. Unlike Quarto or R Markdown, `birtir` evaluates standard `.R` scripts line-by-line, captures visible output, saves tables and plots, and writes a clean `.md` report without requiring HTML rendering tools.
+
+This vignette covers the main rendering workflow:
+
+- `render_analysis_md()`
+- `md_table()`
+- `md_plot()`
+- `md_text()`
+- `report_labels()`
+- `convert_md()`
+
+---
+
+## Writing an Analysis Script
+
+An analysis script is a plain `.R` file that contains standard R code along with `birtir` helper calls:
+
+```r
+# scripts/analysis_example.R
+
+birtir::md_text("# Exploratory Analysis\n\nAutomated analysis for mtcars dataset.")
+
+# Standard output is captured in order
+summary(mtcars[, c("mpg", "wt", "hp")])
+
+# Format data frames into markdown tables
+tbl <- data.frame(
+  Metric = c("Mean MPG", "Mean Weight", "Mean HP"),
+  Value = c(mean(mtcars$mpg), mean(mtcars$wt), mean(mtcars$hp))
+)
+birtir::md_table(tbl, caption = "Summary Statistics", digits = 2, note = "Data source: mtcars.")
+
+# Save and embed ggplot objects
+p <- ggplot(mtcars, aes(x = wt, y = mpg)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_minimal()
+
+birtir::md_plot(p, caption = "Miles per Gallon vs Weight", width = 6, height = 4)
+```
+
+---
+
+## Rendering to Markdown
+
+Render the script with `render_analysis_md()`:
+
+```r
+birtir::render_analysis_md("scripts/analysis_example.R")
+```
+
+### Standalone Report Layout (Default)
+
+By default (`layout = "report"`), `render_analysis_md()` creates a dedicated output directory:
+
+```text
+outputs/
+  analysis-example/
+    analysis-example.md
+    images/
+      analysis-example_fig-001.png
+    tables/
+      analysis-example_tbl-001.md
+```
+
+### Shared Assets ("Book") Layout
+
+When rendering multiple reports into a shared folder, use `layout = "book"`:
+
+```r
+birtir::render_analysis_md("scripts/analysis_example.R", layout = "book")
+```
+
+This places assets into shared `images/` and `tables/` directories under `outputs/`.
+
+---
+
+## Parametrized Reports and Batch Execution
+
+You can pass named parameter lists to analysis scripts via `params`:
+
+```r
+birtir::render_analysis_md(
+  script = "scripts/item_template.R",
+  report_name = "item-01",
+  params = list(item_id = "ITEM_A1", cutoff = 0.70)
+)
+```
+
+Inside `item_template.R`, parameters are available directly by name (`item_id`, `cutoff`) or as elements of `params`:
+
+```r
+birtir::md_text("# Analysis for {item_id}")
+birtir::md_text("Filtering with cutoff = {cutoff}")
+```
+
+---
+
+## Customizing Captions and Internationalization
+
+Use `report_labels()` to set custom prefixes for table and figure captions:
+
+```r
+labels_is <- birtir::report_labels(table = "Tafla", figure = "Mynd")
+
+birtir::render_analysis_md(
+  script = "scripts/analysis_example.R",
+  labels = labels_is
+)
+```
+
+---
+
+## Converting Reports to PDF, HTML, or Word
+
+Use `convert_md()` to convert a generated `.md` file into another format via Pandoc:
+
+```r
+md_path <- birtir::render_analysis_md("scripts/analysis_example.R")
+
+# Convert to DOCX
+birtir::convert_md(md_path, to = "docx")
+
+# Convert to HTML
+birtir::convert_md(md_path, to = "html")
+
+# Convert to PDF
+birtir::convert_md(md_path, to = "pdf")
+```
+
+`convert_md()` automatically strips export-only table links while preserving relative paths to image assets.

@@ -53,4 +53,21 @@ number formatting to values injected with \code{{...}} expressions.
 When called inside \code{\link[=render_analysis_md]{render_analysis_md()}}, the formatted text is appended to
 the active report as Markdown. Outside rendering, the text is printed as a
 console preview and returned invisibly.
+
+\code{md_text()} supports standard Markdown and LaTeX math formulas. Both inline
+math (\verb{$y = \\beta_0 + \\beta_1 x$}) and display equations (\verb{$$\\hat\{y\} = X \\beta$$})
+pass directly into generated Markdown reports.
+
+R model formulas can be dynamically formatted into LaTeX equations using
+\code{\link[=formula_to_latex]{formula_to_latex()}} inside \code{{...}} expressions:
+\code{md_text("Model equation: {formula_to_latex(y ~ x + (1 | group))}")}.
+
+Note: Since \code{md_text()} uses \code{\link[glue:glue]{glue::glue()}}, literal curly braces inside LaTeX
+text strings (such as \verb{\\beta_\{0\}}) should be doubled (\verb{\\beta_\{\{0\}\}}) unless
+generated via an R expression such as \code{\link[=formula_to_latex]{formula_to_latex()}}.
+}
+\examples{
+md_text("Model fit: _R_ = {0.4567}, p {0.0234}", style = "apa")
+md_text("Model equation: {formula_to_latex(y ~ x + (1 | g))}")
+md_text("Inline LaTeX math: $y_i = \\\\beta_0 + \\\\beta_1 x_i + \\\\epsilon_i$")
 }

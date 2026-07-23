@@ -24,6 +24,8 @@
 #' @param decimal_mark Decimal separator used by inline formatting helpers
 #'   during rendering. Use `"."` or `","`. Defaults to `"."`.
 #' @param show_code Logical; if `TRUE`, include source code blocks. Defaults to `FALSE`.
+#' @param show_messages Logical; if `TRUE`, include diagnostic messages (such as
+#'   package startup messages) in the report. Defaults to `FALSE`.
 #' @param labels A label object created with [report_labels()]. Defaults to
 #'   English `Table` / `Figure` labels.
 #'
@@ -41,6 +43,7 @@ render_analysis_md <- function(script,
                                layout = c("report", "book"),
                                decimal_mark = ".",
                                show_code = FALSE,
+                               show_messages = FALSE,
                                labels = report_labels()) {
   stopifnot(file.exists(script))
   stopifnot(is.character(script), length(script) == 1)
@@ -53,6 +56,7 @@ render_analysis_md <- function(script,
   layout <- match.arg(layout)
   validate_decimal_mark(decimal_mark)
   stopifnot(is.logical(show_code), length(show_code) == 1, !is.na(show_code))
+  stopifnot(is.logical(show_messages), length(show_messages) == 1, !is.na(show_messages))
   validate_report_labels(labels)
 
   script_name <- tools::file_path_sans_ext(basename(script))
@@ -106,7 +110,8 @@ render_analysis_md <- function(script,
     envir = envir,
     script = script,
     state = state,
-    show_code = show_code
+    show_code = show_code,
+    show_messages = show_messages
   )
 
   if (!is.null(result$error)) {
@@ -359,6 +364,19 @@ md_plot <- function(plot, caption = NULL, filename = NULL,
 #' the active report as Markdown. Outside rendering, the text is printed as a
 #' console preview and returned invisibly.
 #'
+#' @details
+#' `md_text()` supports standard Markdown and LaTeX math formulas. Both inline
+#' math (`$y = \beta_0 + \beta_1 x$`) and display equations (`$$\hat{y} = X \beta$$`)
+#' pass directly into generated Markdown reports.
+#'
+#' R model formulas can be dynamically formatted into LaTeX equations using
+#' [formula_to_latex()] inside `{...}` expressions:
+#' `md_text("Model equation: {formula_to_latex(y ~ x + (1 | group))}")`.
+#'
+#' Note: Since `md_text()` uses [glue::glue()], literal curly braces inside LaTeX
+#' text strings (such as `\beta_{0}`) should be doubled (`\beta_{{0}}`) unless
+#' generated via an R expression such as [formula_to_latex()].
+#'
 #' @param text A glue-compatible character string.
 #' @param ... Additional values passed to [glue::glue()].
 #' @inheritParams fmt_num
@@ -368,6 +386,11 @@ md_plot <- function(plot, caption = NULL, filename = NULL,
 #'
 #' @return Invisibly returns the formatted Markdown text.
 #' @export
+#'
+#' @examples
+#' md_text("Model fit: _R_ = {0.4567}, p {0.0234}", style = "apa")
+#' md_text("Model equation: {formula_to_latex(y ~ x + (1 | g))}")
+#' md_text("Inline LaTeX math: $y_i = \\beta_0 + \\beta_1 x_i + \\epsilon_i$")
 md_text <- function(text,
                     ...,
                     digits = 2,
@@ -799,7 +822,7 @@ draw_md_plot <- function(plot) {
   invisible(NULL)
 }
 
-evaluate_analysis_block <- function(lines, envir, script, state = NULL, show_code = FALSE) {
+evaluate_analysis_block <- function(lines, envir, script, state = NULL, show_code = FALSE, show_messages = FALSE) {
   code <- paste(lines, collapse = "\n")
   srcfile <- srcfilecopy(script, lines)
 
@@ -839,7 +862,8 @@ evaluate_analysis_block <- function(lines, envir, script, state = NULL, show_cod
       expr,
       envir = envir,
       script = script,
-      srcref = ref
+      srcref = ref,
+      show_messages = show_messages
     )
 
     if (is.null(state)) {
@@ -856,7 +880,7 @@ evaluate_analysis_block <- function(lines, envir, script, state = NULL, show_cod
   list(code = code, lines = output_lines, error = NULL)
 }
 
-evaluate_parsed_expression <- function(expr, envir, script, srcref = NULL) {
+evaluate_parsed_expression <- function(expr, envir, script, srcref = NULL, show_messages = FALSE) {
   lines <- character()
 
   append_condition <- function(prefix, condition) {
@@ -875,7 +899,9 @@ evaluate_parsed_expression <- function(expr, envir, script, srcref = NULL) {
           invisible(NULL)
         },
         message = function(condition) {
-          append_condition("Message: ", condition)
+          if (isTRUE(show_messages)) {
+            append_condition("Message: ", condition)
+          }
           invokeRestart("muffleMessage")
         },
         warning = function(condition) {

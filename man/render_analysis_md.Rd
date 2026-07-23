@@ -12,6 +12,7 @@ render_analysis_md(
   layout = c("report", "book"),
   decimal_mark = ".",
   show_code = FALSE,
+  show_messages = FALSE,
   labels = report_labels()
 )
 }
@@ -35,6 +36,9 @@ under \code{output_dir}, or \code{"book"} to write the markdown file into
 during rendering. Use \code{"."} or \code{","}. Defaults to \code{"."}.}
 
 \item{show_code}{Logical; if \code{TRUE}, include source code blocks. Defaults to \code{FALSE}.}
+
+\item{show_messages}{Logical; if \code{TRUE}, include diagnostic messages (such as
+package startup messages) in the report. Defaults to \code{FALSE}.}
 
 \item{labels}{A label object created with \code{\link[=report_labels]{report_labels()}}. Defaults to
 English \code{Table} / \code{Figure} labels.}

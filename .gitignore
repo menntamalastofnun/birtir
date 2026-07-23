@@ -14,3 +14,4 @@ birtir.Rproj
 # Windows/WSL temp files
 *:Zone.Identifier
 *~
+dev/outputs/
